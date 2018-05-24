@@ -1,34 +1,18 @@
-Aliyun FunctionCompute Go SDK
-=================================
-
-API Reference :
-
-[FC API](https://help.aliyun.com/document_detail/52877.html)
-
-[![GitHub Version](https://badge.fury.io/gh/aliyun%2Ffc-go-sdk.svg)](https://badge.fury.io/gh/aliyun%2Ffc-go-sdk)
-[![Build Status](https://travis-ci.org/aliyun/fc-go-sdk.svg?branch=master)](https://travis-ci.org/rsonghuster/test-travis)
-<!-- [![Coverage Status](https://coveralls.io/repos/github/aliyun/fc-go-sdk/badge.svg?branch=master&foo=bar)](https://coveralls.io/github/aliyun/fc-go-sdk?branch=master&foo=bar) -->
-
-VERSION
---------
-go >= 1.8
-
-Overview
---------
-Aliyun FunctionCompute Go SDK, sample
-```go
 package main
 
 import (
 	"fmt"
 	"os"
 
+	"net/http"
+
 	"aliyun/serverless/lambda-go-sdk"
 )
 
 func main() {
 	serviceName := "service555"
-	client, _ := fc.NewClient(os.Getenv("ENDPOINT"), "2016-08-15", os.Getenv("ACCESS_KEY_ID"), os.Getenv("ACCESS_KEY_SECRET"))
+	client, _ := fc.NewClient(os.Getenv("ENDPOINT"), "2016-08-15", os.Getenv("ACCESS_KEY_ID"), os.Getenv("ACCESS_KEY_SECRET"),
+		fc.WithTransport(&http.Transport{MaxIdleConnsPerHost: 100}))
 
 	fmt.Println("Creating service")
 	createServiceOutput, err := client.CreateService(fc.NewCreateServiceInput().
@@ -94,11 +78,12 @@ func main() {
 	// CreateFunction
 	fmt.Println("Creating function1")
 	createFunctionInput1 := fc.NewCreateFunctionInput(serviceName).WithFunctionName("testf1").
-        		WithDescription("go sdk test function").
-        		WithHandler("main.my_handler").WithRuntime("python2.7").
-        		WithCode(fc.NewCode().WithFiles("./testCode/hello_world.zip")).
-        		WithTimeout(5)
-
+		WithDescription("testf1").
+		WithHandler("hello.index").WithRuntime("nodejs4.4").
+		WithCode(fc.NewCode().
+			WithOSSBucketName("fc-sdk-trigger-bucket-hangzhou").
+			WithOSSObjectName("hello_world_nodejs")).
+		WithTimeout(5)
 	createFunctionOutput, err := client.CreateFunction(createFunctionInput1)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -184,18 +169,3 @@ func main() {
 		fmt.Printf("DeleteService response: %s \n", deleteServiceOutput)
 	}
 }
-
-```
-
-
-More resources
---------------
-- [Aliyun FunctionCompute docs](https://help.aliyun.com/product/50980.html)
-
-Contacting us
--------------
-- [Links](https://help.aliyun.com/document_detail/53087.html)
-
-License
--------
-- [MIT](https://github.com/aliyun/fc-python-sdk/blob/master/LICENSE)
