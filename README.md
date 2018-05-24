@@ -5,6 +5,7 @@ API Reference :
 
 [FC API](https://help.aliyun.com/document_detail/52877.html)
 
+[![GitHub Version](https://badge.fury.io/gh/aliyun%2Ffc-go-sdk.svg)](https://badge.fury.io/gh/aliyun%2Ffc-go-sdk)
 [![Build Status](https://travis-ci.org/aliyun/fc-go-sdk.svg?branch=master)](https://travis-ci.org/rsonghuster/test-travis)
 <!-- [![Coverage Status](https://coveralls.io/repos/github/aliyun/fc-go-sdk/badge.svg?branch=master&foo=bar)](https://coveralls.io/github/aliyun/fc-go-sdk?branch=master&foo=bar) -->
 
