@@ -89,7 +89,6 @@ type FunctionCreateObject struct {
 	Handler                *string           `json:"handler"`
 	Timeout                *int32            `json:"timeout"`
 	MemorySize             *int32            `json:"memorySize"`
-	ReservedContainerCount *int32            `json:"reservedContainerCount"`
 	Code                   *Code             `json:"code"`
 	EnvironmentVariables   map[string]string `json:"environmentVariables"`
 
@@ -130,10 +129,6 @@ func (i *CreateFunctionInput) WithMemorySize(memory int32) *CreateFunctionInput 
 	return i
 }
 
-func (i *CreateFunctionInput) WithReservedContainerCount(count int32) *CreateFunctionInput {
-	i.ReservedContainerCount = &count
-	return i
-}
 
 func (i *CreateFunctionInput) WithCode(code *Code) *CreateFunctionInput {
 	if code != nil && code.err != nil {
@@ -204,7 +199,6 @@ type FunctionUpdateObject struct {
 	Handler                *string           `json:"handler"`
 	Timeout                *int32            `json:"timeout"`
 	MemorySize             *int32            `json:"memorySize"`
-	ReservedContainerCount *int32            `json:"reservedContainerCount"`
 	Code                   *Code             `json:"code"`
 	EnvironmentVariables   map[string]string `json:"environmentVariables"`
 
@@ -250,10 +244,6 @@ func (i *UpdateFunctionInput) WithMemorySize(memory int32) *UpdateFunctionInput 
 	return i
 }
 
-func (i *UpdateFunctionInput) WithReservedContainerCount(count int32) *UpdateFunctionInput {
-	i.ReservedContainerCount = &count
-	return i
-}
 
 func (i *UpdateFunctionInput) WithCode(code *Code) *UpdateFunctionInput {
 	if code != nil && code.err != nil {
@@ -399,7 +389,6 @@ type functionMetadata struct {
 	Handler                *string           `json:"handler"`
 	Timeout                *int32            `json:"timeout"`
 	MemorySize             *int32            `json:"memorySize"`
-	ReservedContainerCount *int32            `json:"reservedContainerCount"`
 	CodeSize               *int64            `json:"codeSize"`
 	CodeChecksum           *string           `json:"codeChecksum"`
 	EnvironmentVariables   map[string]string `json:"environmentVariables"`

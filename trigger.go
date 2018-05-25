@@ -13,8 +13,6 @@ const (
 	TRIGGER_TYPE_LOG        = "log"
 	TRIGGER_TYPE_TIMER      = "timer"
 	TRIGGER_TYPE_HTTP       = "http"
-	TRIGGER_TYPE_TABLESTORE = "tablestore"
-	TRIGGER_TYPE_CDN_EVENTS = "cdn_events"
 )
 
 // CreateTriggerInput defines trigger creation input
@@ -179,18 +177,6 @@ func (m *triggerMetadata) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		tmp.TriggerConfig = httpTriggerConfig
-	case TRIGGER_TYPE_TABLESTORE:
-		tableStoreTriggerConfig := &TableStoreTriggerConfig{}
-		if err := json.Unmarshal(tmp.RawTriggerConfig, tableStoreTriggerConfig); err != nil {
-			return err
-		}
-		tmp.TriggerConfig = tableStoreTriggerConfig
-	case TRIGGER_TYPE_CDN_EVENTS:
-		cdnEventsTriggerConfig := &CDNEventsTriggerConfig{}
-		if err := json.Unmarshal(tmp.RawTriggerConfig, cdnEventsTriggerConfig); err != nil {
-			return err
-		}
-		tmp.TriggerConfig = cdnEventsTriggerConfig
 	default:
 		return ErrUnknownTriggerType
 	}
