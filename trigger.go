@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	TRIGGER_TYPE_OSS        = "oss"
-	TRIGGER_TYPE_LOG        = "log"
-	TRIGGER_TYPE_TIMER      = "timer"
-	TRIGGER_TYPE_HTTP       = "http"
+	TRIGGER_TYPE_OSS   = "oss"
+	TRIGGER_TYPE_LOG   = "log"
+	TRIGGER_TYPE_TIMER = "timer"
+	TRIGGER_TYPE_HTTP  = "http"
 )
 
 // CreateTriggerInput defines trigger creation input
@@ -131,6 +131,7 @@ func (o CreateTriggerOutput) MarshalJSON() ([]byte, error) {
 
 type triggerMetadata struct {
 	TriggerName      *string         `json:"triggerName"`
+	TriggerID        *string         `json:"triggerID"`
 	SourceARN        *string         `json:"sourceArn"`
 	TriggerType      *string         `json:"triggerType"`
 	InvocationRole   *string         `json:"invocationRole"`
