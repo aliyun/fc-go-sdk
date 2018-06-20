@@ -17,7 +17,9 @@ type Client struct {
 // NewClient new fc client
 func NewClient(endpoint, apiVersion, accessKeyID, accessKeySecret string, opts ...ClientOption) (*Client, error) {
 	config := NewConfig()
-	config.APIVersion = apiVersion
+	if apiVersion != "" {
+		config.APIVersion = apiVersion
+	}
 	config.AccessKeyID = accessKeyID
 	config.AccessKeySecret = accessKeySecret
 	config.Endpoint, config.host = GetAccessPoint(endpoint)
