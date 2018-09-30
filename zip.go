@@ -11,6 +11,7 @@ import (
 
 // TempZipDir zips everything from source dir into a temporary zip file which doesn't include the source dir but its content.
 // Return the location of the temporary zip file.
+//noinspection GoUnusedExportedFunction
 func TempZipDir(dir string) (string, error) {
 	// Collect files to zip.
 	fs, err := ioutil.ReadDir(dir)
@@ -45,6 +46,7 @@ func TmpZip(files []string) (string, error) {
 }
 
 // Zip everything from the source (either file/directory) recursively into target zip file.
+//noinspection GoUnusedExportedFunction
 func Zip(files []string, target string) error {
 	zipFile, err := os.Create(target)
 	if err != nil {
@@ -102,11 +104,11 @@ func compress(source string, archive *zip.Writer) error {
 
 		if info.Mode()&os.ModeSymlink != 0 {
 			// handle symbol link file
-			dest, err := os.Readlink(path)
+			destination, err := os.Readlink(path)
 			if err != nil {
 				return err
 			}
-			_, err = writer.Write([]byte(dest))
+			_, err = writer.Write([]byte(destination))
 			return err
 		}
 
@@ -157,11 +159,11 @@ func ZipDir(srcDir string, output io.Writer) error {
 			return err
 		}
 		if (info.Mode() & os.ModeSymlink) != 0 {
-			dest, err := os.Readlink(path)
+			destination, err := os.Readlink(path)
 			if err != nil {
 				return err
 			}
-			_, err = writer.Write([]byte(dest))
+			_, err = writer.Write([]byte(destination))
 			return err
 		}
 		if info.IsDir() {

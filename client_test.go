@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -119,9 +120,11 @@ func (s *FcClientTestSuite) TestService() {
 				WithDescription("this is a service test for go sdk"),
 		)
 		assert.Nil(errListService)
-		listServicesOutput, err := client.ListServices(NewListServicesInput().
-			WithLimit(100).
-			WithPrefix("go-service-"))
+		listServicesOutput, err := client.ListServices(
+			NewListServicesInput().
+				WithLimit(100).
+				WithPrefix("go-service-"),
+		)
 		assert.Nil(err)
 		assert.Equal(len(listServicesOutput.Services), a+2)
 	}
@@ -231,7 +234,7 @@ func (s *FcClientTestSuite) TestFunction() {
 	assert.NotNil(invokeOutput.GetRequestID())
 	assert.Equal(string(invokeOutput.Payload), "hello world")
 
-	// TestFunction use local zipfile
+	// TestFunction use local zip file
 	functionName = fmt.Sprintf("go-function-%s", RandStringBytes(8))
 	createFunctionInput := NewCreateFunctionInput(serviceName).
 		WithFunctionName(functionName).
@@ -246,6 +249,140 @@ func (s *FcClientTestSuite) TestFunction() {
 	assert.Nil(err)
 	assert.NotNil(invokeOutput.GetRequestID())
 	assert.Equal(string(invokeOutput.Payload), "hello world")
+}
+
+func (s *FcClientTestSuite) TestCustomDomain() {
+	assertThat := s.Require()
+
+	domainName := fmt.Sprintf("custom-domain-%s", RandStringBytes(8))
+	client, err := NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
+	assertThat.Nil(err)
+
+	// clear
+	defer func() {
+		listDomains, err := client.ListCustomDomain(
+			NewListCustomDomainInput().
+				WithLimit(100).
+				WithPrefix("custom-domain-"),
+		)
+		assertThat.Nil(err)
+		for _, customDomainMetadata := range listDomains.CustomDomains {
+			s.clearCustomDomain(client, *customDomainMetadata.DomainName)
+		}
+	}()
+
+	pathConfig := NewPathConfig().
+		WithPath("/").
+		WithServiceName("serviceName").
+		WithFunctionName("functionName").
+		WithQualifier("")
+	routeConfig := &RouteConfig{[]PathConfig{*pathConfig}}
+
+	// CreateCustomDomain
+	createCustomDomainOutput, err := client.CreateCustomDomain(
+		NewCreateCustomDomainInput().
+			WithDomainName(domainName).
+			WithProtocol("HTTP").
+			WithRouteConfig(*routeConfig),
+	)
+	assertThat.Nil(err)
+	assertThat.Equal(*createCustomDomainOutput.DomainName, domainName)
+	assertThat.Equal(*createCustomDomainOutput.Protocol, "HTTP")
+	assertEqualRouteConfig(assertThat, *createCustomDomainOutput.RouteConfig, *routeConfig)
+	assertThat.NotNil(*createCustomDomainOutput.AccountId)
+	assertThat.NotNil(*createCustomDomainOutput.ApiVersion)
+	assertThat.NotNil(*createCustomDomainOutput.CreatedTime)
+	assertThat.NotNil(*createCustomDomainOutput.LastModifiedTime)
+
+	// GetCustomDomain
+	getCustomDomainOutput, err := client.GetCustomDomain(NewGetCustomDomainInput(domainName))
+	assertThat.Nil(err)
+	assertThat.Equal(*getCustomDomainOutput.DomainName, domainName)
+
+	// UpdateCustomDomain update Protocol
+	updateCustomDomainInput := NewUpdateCustomDomainInput(domainName).WithProtocol("HTTPS")
+	updateCustomDomainOutput, err := client.UpdateCustomDomain(updateCustomDomainInput)
+	assertThat.Nil(err)
+	assertThat.Equal(updateCustomDomainOutput.Protocol, "HTTPS")
+
+	pathConfig1 := NewPathConfig().
+		WithPath("/login").
+		WithServiceName("serviceName1").
+		WithFunctionName("functionName1").
+		WithQualifier("")
+	routeConfig1 := &RouteConfig{[]PathConfig{*pathConfig1}}
+
+	// UpdateCustomDomain update RouteConfig
+	updateCustomDomainInput1 := NewUpdateCustomDomainInput(domainName).WithRouteConfig(*routeConfig1)
+	updateCustomDomainOutput1, err := client.UpdateCustomDomain(updateCustomDomainInput1)
+	assertThat.Nil(err)
+	assertEqualRouteConfig(assertThat, *updateCustomDomainOutput1.RouteConfig, *routeConfig1)
+
+	// ListCustomDomain
+	listCustomDomainOutput, err := client.ListCustomDomain(
+		NewListCustomDomainInput().
+			WithLimit(100).
+			WithPrefix("custom-domain-"),
+	)
+	assertThat.Nil(err)
+	assertThat.Equal(len(listCustomDomainOutput.CustomDomains), 1)
+	assertThat.Equal(listCustomDomainOutput.CustomDomains[0].DomainName, domainName)
+
+	for a := 0; a < 10; a++ {
+		listDomainName := fmt.Sprintf("custom-domain-%s", RandStringBytes(8))
+		_, errListDomainName := client.CreateCustomDomain(
+			NewCreateCustomDomainInput().
+				WithDomainName(listDomainName).
+				WithProtocol("HTTP").
+				WithRouteConfig(*routeConfig),
+		)
+		assertThat.Nil(errListDomainName)
+
+		listDomainsOutput, err := client.ListCustomDomain(
+			NewListCustomDomainInput().
+				WithLimit(100).
+				WithPrefix("custom-domain-"),
+		)
+		assertThat.Nil(err)
+		assertThat.Equal(len(listDomainsOutput.CustomDomains), a+2)
+	}
+
+	// DeleteCustomDomain
+	_, errDelCustomDomain := client.DeleteCustomDomain(NewDeleteCustomDomainInput(domainName))
+	assertThat.Nil(errDelCustomDomain)
+}
+
+func assertEqualRouteConfig(assertThat *require.Assertions, actual RouteConfig, expect RouteConfig) {
+	actualLength := len(actual.Routes)
+	assertThat.Equal(actualLength, len(expect.Routes))
+
+	for i := 0; i < actualLength; i++ {
+		assertThat.Equal(
+			actual.Routes[i].ServiceName,
+			expect.Routes[i].ServiceName,
+		)
+		assertThat.Equal(
+			actual.Routes[i].FunctionName,
+			expect.Routes[i].FunctionName,
+		)
+		assertThat.Equal(
+			actual.Routes[i].Path,
+			expect.Routes[i].Path,
+		)
+		assertThat.Equal(
+			actual.Routes[i].Qualifier,
+			expect.Routes[i].Qualifier,
+		)
+	}
+}
+
+func (s *FcClientTestSuite) clearCustomDomain(c *Client, domainName string) {
+	assert := s.Require()
+
+	_, errDelCustomDomain := c.DeleteCustomDomain(
+		NewDeleteCustomDomainInput(domainName),
+	)
+	assert.Nil(errDelCustomDomain)
 }
 
 func (s *FcClientTestSuite) TestTrigger() {
@@ -298,7 +435,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).
 		WithTriggerName(triggerName).
 		WithInvocationRole(invocationRole).
-		WithTriggerType(TRIGGER_TYPE_OSS).
+		WithTriggerType(TriggerTypeOss).
 		WithSourceARN(sourceArn).
 		WithTriggerConfig(
 			NewOSSTriggerConfig().
@@ -312,7 +449,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 	s.checkTriggerResponse(
 		&createTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_OSS,
+		TriggerTypeOss,
 		sourceArn,
 		invocationRole,
 	)
@@ -322,7 +459,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 	s.checkTriggerResponse(
 		&getTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_OSS,
+		TriggerTypeOss,
 		sourceArn,
 		invocationRole,
 	)
@@ -335,7 +472,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 	s.checkTriggerResponse(
 		&updateTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_OSS,
+		TriggerTypeOss,
 		sourceArn,
 		invocationRole,
 	)
@@ -390,7 +527,7 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).
 		WithTriggerName(triggerName).
 		WithInvocationRole(invocationRole).
-		WithTriggerType(TRIGGER_TYPE_LOG).
+		WithTriggerType(TriggerTypeLog).
 		WithSourceARN(sourceArn).
 		WithTriggerConfig(logTriggerConfig)
 
@@ -399,7 +536,7 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 	s.checkTriggerResponse(
 		&createTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_LOG,
+		TriggerTypeLog,
 		sourceArn,
 		invocationRole,
 	)
@@ -409,7 +546,7 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 	s.checkTriggerResponse(
 		&getTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_LOG,
+		TriggerTypeLog,
 		sourceArn,
 		invocationRole,
 	)
@@ -422,7 +559,7 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 	s.checkTriggerResponse(
 		&updateTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_LOG,
+		TriggerTypeLog,
 		sourceArn,
 		invocationRole,
 	)
@@ -445,7 +582,7 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).
 		WithTriggerName(triggerName).
 		WithInvocationRole(invocationRole).
-		WithTriggerType(TRIGGER_TYPE_HTTP).
+		WithTriggerType(TriggerTypeHttp).
 		WithSourceARN(sourceArn).
 		WithTriggerConfig(
 			NewHTTPTriggerConfig().
@@ -458,7 +595,7 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	s.checkTriggerResponse(
 		&createTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_HTTP,
+		TriggerTypeHttp,
 		sourceArn,
 		invocationRole,
 	)
@@ -468,7 +605,7 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	s.checkTriggerResponse(
 		&getTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_HTTP,
+		TriggerTypeHttp,
 		sourceArn,
 		invocationRole,
 	)
@@ -484,7 +621,7 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	s.checkTriggerResponse(
 		&updateTriggerOutput.triggerMetadata,
 		triggerName,
-		TRIGGER_TYPE_HTTP,
+		TriggerTypeHttp,
 		sourceArn,
 		invocationRole,
 	)
@@ -508,7 +645,7 @@ func (s *FcClientTestSuite) checkTriggerResponse(
 	assert := s.Require()
 	assert.Equal(*triggerResp.TriggerName, triggerName)
 	assert.Equal(*triggerResp.TriggerType, triggerType)
-	if triggerType != TRIGGER_TYPE_HTTP {
+	if triggerType != TriggerTypeHttp {
 		assert.Equal(*triggerResp.SourceARN, sourceArn)
 	} else {
 		assert.Nil(triggerResp.SourceARN)

@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	TRIGGER_TYPE_OSS   = "oss"
-	TRIGGER_TYPE_LOG   = "log"
-	TRIGGER_TYPE_TIMER = "timer"
-	TRIGGER_TYPE_HTTP  = "http"
+	TriggerTypeOss   = "oss"
+	TriggerTypeLog   = "log"
+	TriggerTypeTimer = "timer"
+	TriggerTypeHttp  = "http"
 )
 
 // CreateTriggerInput defines trigger creation input
@@ -95,24 +95,8 @@ func (i *CreateTriggerInput) Validate() error {
 }
 
 type CreateTriggerOutput struct {
-	Header http.Header
 	triggerMetadata
-}
-
-func (o CreateTriggerOutput) GetRequestID() string {
-	return GetRequestID(o.Header)
-}
-
-func (o CreateTriggerOutput) GetEtag() string {
-	return GetEtag(o.Header)
-}
-
-func (o CreateTriggerOutput) String() string {
-	b, err := json.MarshalIndent(o, "", printIndent)
-	if err != nil {
-		return ""
-	}
-	return string(b)
+	outputDecorator
 }
 
 // MarshalJSON marshals trigger metadata and excludes RawTriggerConfig
@@ -144,7 +128,7 @@ type triggerMetadata struct {
 
 type triggerMetadataAlias triggerMetadata
 
-// UnmarshalJSON unmarshals the data to trigger metadata and sets TriggerConfig field to an actual trigger config.
+// UnmarshalJSON unmarshal the data to trigger metadata and sets TriggerConfig field to an actual trigger config.
 // User can use type switches/assertion to get the actual trigger config.
 func (m *triggerMetadata) UnmarshalJSON(data []byte) error {
 
@@ -156,25 +140,25 @@ func (m *triggerMetadata) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch *tmp.TriggerType {
-	case TRIGGER_TYPE_OSS:
+	case TriggerTypeOss:
 		ossTriggerConfig := &OSSTriggerConfig{}
 		if err := json.Unmarshal(tmp.RawTriggerConfig, ossTriggerConfig); err != nil {
 			return err
 		}
 		tmp.TriggerConfig = ossTriggerConfig
-	case TRIGGER_TYPE_LOG:
+	case TriggerTypeLog:
 		logTriggerConfig := &LogTriggerConfig{}
 		if err := json.Unmarshal(tmp.RawTriggerConfig, logTriggerConfig); err != nil {
 			return err
 		}
 		tmp.TriggerConfig = logTriggerConfig
-	case TRIGGER_TYPE_TIMER:
+	case TriggerTypeTimer:
 		timeTriggerConfig := &TimeTriggerConfig{}
 		if err := json.Unmarshal(tmp.RawTriggerConfig, timeTriggerConfig); err != nil {
 			return err
 		}
 		tmp.TriggerConfig = timeTriggerConfig
-	case TRIGGER_TYPE_HTTP:
+	case TriggerTypeHttp:
 		httpTriggerConfig := &HTTPTriggerConfig{}
 		if err := json.Unmarshal(tmp.RawTriggerConfig, httpTriggerConfig); err != nil {
 			return err
@@ -322,24 +306,8 @@ func (i *GetTriggerInput) Validate() error {
 
 // GetTriggerOutput define trigger response from fc
 type GetTriggerOutput struct {
-	Header http.Header
 	triggerMetadata
-}
-
-func (o GetTriggerOutput) GetEtag() string {
-	return GetEtag(o.Header)
-}
-
-func (o GetTriggerOutput) GetRequestID() string {
-	return GetRequestID(o.Header)
-}
-
-func (o GetTriggerOutput) String() string {
-	b, err := json.MarshalIndent(o, "", printIndent)
-	if err != nil {
-		return ""
-	}
-	return string(b)
+	outputDecorator
 }
 
 // MarshalJSON marshals trigger metadata and excludes RawTriggerConfig
@@ -438,24 +406,8 @@ func (i *UpdateTriggerInput) Validate() error {
 }
 
 type UpdateTriggerOutput struct {
-	Header http.Header
 	triggerMetadata
-}
-
-func (o UpdateTriggerOutput) String() string {
-	b, err := json.MarshalIndent(o, "", printIndent)
-	if err != nil {
-		return ""
-	}
-	return string(b)
-}
-
-func (o UpdateTriggerOutput) GetRequestID() string {
-	return GetRequestID(o.Header)
-}
-
-func (o UpdateTriggerOutput) GetEtag() string {
-	return GetEtag(o.Header)
+	outputDecorator
 }
 
 // MarshalJSON marshals trigger metadata and excludes RawTriggerConfig
@@ -550,21 +502,9 @@ func (i *ListTriggersInput) Validate() error {
 
 // ListTriggersOutput defines the trigger response list
 type ListTriggersOutput struct {
-	Header    http.Header
 	Triggers  []*triggerMetadata `json:"triggers"`
 	NextToken *string            `json:"nextToken,omitempty"`
-}
-
-func (o ListTriggersOutput) String() string {
-	b, err := json.MarshalIndent(o, "", printIndent)
-	if err != nil {
-		return ""
-	}
-	return string(b)
-}
-
-func (o ListTriggersOutput) GetRequestID() string {
-	return GetRequestID(o.Header)
+	outputDecorator
 }
 
 type DeleteTriggerInput struct {
@@ -627,17 +567,5 @@ func (i *DeleteTriggerInput) Validate() error {
 }
 
 type DeleteTriggerOutput struct {
-	Header http.Header
-}
-
-func (o DeleteTriggerOutput) String() string {
-	b, err := json.MarshalIndent(o, "", printIndent)
-	if err != nil {
-		return ""
-	}
-	return string(b)
-}
-
-func (o DeleteTriggerOutput) GetRequestID() string {
-	return GetRequestID(o.Header)
+	outputDecorator
 }

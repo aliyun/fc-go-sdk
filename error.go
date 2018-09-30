@@ -1,7 +1,6 @@
 package fc
 
 import (
-	"encoding/json"
 	"errors"
 )
 
@@ -15,14 +14,7 @@ type ServiceError struct {
 	RequestID    string `json:"RequestId"`
 	ErrorCode    string `json:"ErrorCode"`
 	ErrorMessage string `json:"ErrorMessage"`
-}
-
-func (e ServiceError) String() string {
-	b, err := json.MarshalIndent(e, "", printIndent)
-	if err != nil {
-		return ""
-	}
-	return string(b)
+	outputDecorator
 }
 
 func (e ServiceError) Error() string {

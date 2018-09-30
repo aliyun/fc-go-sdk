@@ -8,6 +8,7 @@ type TimeTriggerConfig struct {
 }
 
 // NewTimeTriggerConfig creates an empty TimeTriggerConfig
+//noinspection GoUnusedExportedFunction
 func NewTimeTriggerConfig() *TimeTriggerConfig {
 	return &TimeTriggerConfig{}
 }

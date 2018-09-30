@@ -30,7 +30,7 @@ func GetAuthStr(
 
 // GetSignResourceWithQueries get signature resource with queries
 func GetSignResourceWithQueries(path string, queries map[string][]string) string {
-	paramsList := []string{}
+	var paramsList []string
 	for key, values := range queries {
 		if len(values) == 0 {
 			paramsList = append(paramsList, key)

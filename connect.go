@@ -86,6 +86,7 @@ func (conn *Connection) SendRequest(path string, method string,
 }
 
 // ParameterToString serialize parameters
+//noinspection GoUnusedExportedFunction
 func ParameterToString(obj interface{}, collectionFormat string) string {
 	if reflect.TypeOf(obj).String() == "[]string" {
 		switch collectionFormat {

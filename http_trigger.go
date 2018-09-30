@@ -1,5 +1,6 @@
 package fc
 
+//noinspection GoUnusedConst
 const (
 	// AuthAnonymous defines http trigger without authorized
 	AuthAnonymous = "anonymous"
@@ -9,6 +10,7 @@ const (
 )
 
 // DefaultAuthType ...
+//noinspection GoUnusedGlobalVariable
 var DefaultAuthType = AuthFunction
 
 // HTTPTriggerConfig ..
