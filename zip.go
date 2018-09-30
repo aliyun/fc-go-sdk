@@ -17,7 +17,7 @@ func TempZipDir(dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	files := []string{}
+	var files []string
 	for _, f := range fs {
 		files = append(files, filepath.Join(dir, f.Name()))
 	}
@@ -27,12 +27,12 @@ func TempZipDir(dir string) (string, error) {
 // TmpZip everything from source file into a temporary zip file.
 // Return the location of the temporary zip file.
 func TmpZip(files []string) (string, error) {
-	zipfile, err := ioutil.TempFile("", "fc_temp_file_")
+	zipFile, err := ioutil.TempFile("", "fc_temp_file_")
 	if err != nil {
 		return "", err
 	}
 
-	archive := zip.NewWriter(zipfile)
+	archive := zip.NewWriter(zipFile)
 	defer archive.Close()
 
 	for _, source := range files {
@@ -41,18 +41,18 @@ func TmpZip(files []string) (string, error) {
 		}
 	}
 
-	return zipfile.Name(), nil
+	return zipFile.Name(), nil
 }
 
 // Zip everything from the source (either file/directory) recursively into target zip file.
 func Zip(files []string, target string) error {
-	zipfile, err := os.Create(target)
+	zipFile, err := os.Create(target)
 	if err != nil {
 		return err
 	}
-	defer zipfile.Close()
+	defer zipFile.Close()
 
-	archive := zip.NewWriter(zipfile)
+	archive := zip.NewWriter(zipFile)
 	defer archive.Close()
 
 	for _, f := range files {
@@ -156,7 +156,7 @@ func ZipDir(srcDir string, output io.Writer) error {
 		if err != nil {
 			return err
 		}
-		if info.Mode()&os.ModeSymlink != 0 {
+		if (info.Mode() & os.ModeSymlink) != 0 {
 			dest, err := os.Readlink(path)
 			if err != nil {
 				return err

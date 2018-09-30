@@ -11,13 +11,20 @@ import (
 
 func main() {
 	serviceName := "service555"
-	client, _ := fc.NewClient(os.Getenv("ENDPOINT"), "2016-08-15", os.Getenv("ACCESS_KEY_ID"), os.Getenv("ACCESS_KEY_SECRET"),
-		fc.WithTransport(&http.Transport{MaxIdleConnsPerHost: 100}))
+	client, _ := fc.NewClient(
+		os.Getenv("ENDPOINT"),
+		"2016-08-15",
+		os.Getenv("ACCESS_KEY_ID"),
+		os.Getenv("ACCESS_KEY_SECRET"),
+		fc.WithTransport(&http.Transport{MaxIdleConnsPerHost: 100}),
+	)
 
 	fmt.Println("Creating service")
-	createServiceOutput, err := client.CreateService(fc.NewCreateServiceInput().
-		WithServiceName(serviceName).
-		WithDescription("this is a smoke test for go sdk"))
+	createServiceOutput, err := client.CreateService(
+		fc.NewCreateServiceInput().
+			WithServiceName(serviceName).
+			WithDescription("this is a smoke test for go sdk"),
+	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
@@ -36,7 +43,8 @@ func main() {
 
 	// UpdateService
 	fmt.Println("Updating service")
-	updateServiceInput := fc.NewUpdateServiceInput(serviceName).WithDescription("new description")
+	updateServiceInput := fc.NewUpdateServiceInput(serviceName).
+		WithDescription("new description")
 	updateServiceOutput, err := client.UpdateService(updateServiceInput)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -46,8 +54,11 @@ func main() {
 
 	// UpdateService with IfMatch
 	fmt.Println("Updating service with IfMatch")
-	updateServiceInput2 := fc.NewUpdateServiceInput(serviceName).WithDescription("new description2").
-		WithIfMatch(updateServiceOutput.Header.Get("ETag"))
+	updateServiceInput2 := fc.NewUpdateServiceInput(serviceName).
+		WithDescription("new description2").
+		WithIfMatch(
+			updateServiceOutput.Header.Get("ETag"),
+		)
 	updateServiceOutput2, err := client.UpdateService(updateServiceInput2)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -57,7 +68,8 @@ func main() {
 
 	// UpdateService with wrong IfMatch
 	fmt.Println("Updating service with wrong IfMatch")
-	updateServiceInput3 := fc.NewUpdateServiceInput(serviceName).WithDescription("new description2").
+	updateServiceInput3 := fc.NewUpdateServiceInput(serviceName).
+		WithDescription("new description2").
 		WithIfMatch("1234")
 	updateServiceOutput3, err := client.UpdateService(updateServiceInput3)
 	if err != nil {
@@ -68,7 +80,9 @@ func main() {
 
 	// ListServices
 	fmt.Println("Listing services")
-	listServicesOutput, err := client.ListServices(fc.NewListServicesInput().WithLimit(100))
+	listServicesOutput, err := client.ListServices(
+		fc.NewListServicesInput().WithLimit(100),
+	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
@@ -77,12 +91,16 @@ func main() {
 
 	// CreateFunction
 	fmt.Println("Creating function1")
-	createFunctionInput1 := fc.NewCreateFunctionInput(serviceName).WithFunctionName("testf1").
+	createFunctionInput1 := fc.NewCreateFunctionInput(serviceName).
+		WithFunctionName("testf1").
 		WithDescription("testf1").
-		WithHandler("hello.index").WithRuntime("nodejs4.4").
-		WithCode(fc.NewCode().
-			WithOSSBucketName("fc-sdk-trigger-bucket-hangzhou").
-			WithOSSObjectName("hello_world_nodejs")).
+		WithHandler("hello.index").
+		WithRuntime("nodejs4.4").
+		WithCode(
+			fc.NewCode().
+				WithOSSBucketName("fc-sdk-trigger-bucket-hangzhou").
+				WithOSSObjectName("hello_world_nodejs"),
+		).
 		WithTimeout(5)
 	createFunctionOutput, err := client.CreateFunction(createFunctionInput1)
 	if err != nil {
@@ -91,7 +109,9 @@ func main() {
 		fmt.Printf("CreateFunction response: %s \n", createFunctionOutput)
 	}
 	fmt.Println("Creating function2")
-	createFunctionOutput2, err := client.CreateFunction(createFunctionInput1.WithFunctionName("testf2"))
+	createFunctionOutput2, err := client.CreateFunction(
+		createFunctionInput1.WithFunctionName("testf2"),
+	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
@@ -100,7 +120,9 @@ func main() {
 
 	// ListFunctions
 	fmt.Println("Listing functions")
-	listFunctionsOutput, err := client.ListFunctions(fc.NewListFunctionsInput(serviceName).WithPrefix("test"))
+	listFunctionsOutput, err := client.ListFunctions(
+		fc.NewListFunctionsInput(serviceName).WithPrefix("test"),
+	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
@@ -109,8 +131,10 @@ func main() {
 
 	// UpdateFunction
 	fmt.Println("Updating function")
-	updateFunctionOutput, err := client.UpdateFunction(fc.NewUpdateFunctionInput(serviceName, "testf1").
-		WithDescription("newdesc"))
+	updateFunctionOutput, err := client.UpdateFunction(
+		fc.NewUpdateFunctionInput(serviceName, "testf1").
+			WithDescription("newdesc"),
+	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
@@ -144,14 +168,20 @@ func main() {
 
 	// DeleteFunction
 	fmt.Println("Deleting functions")
-	listFunctionsOutput, err = client.ListFunctions(fc.NewListFunctionsInput(serviceName).WithLimit(10))
+	listFunctionsOutput, err = client.ListFunctions(
+		fc.NewListFunctionsInput(serviceName).WithLimit(10),
+	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
 		fmt.Printf("ListFunctions response: %s \n", listFunctionsOutput)
 		for _, fuc := range listFunctionsOutput.Functions {
 			fmt.Printf("Deleting function %s \n", *fuc.FunctionName)
-			if output, err := client.DeleteFunction(fc.NewDeleteFunctionInput(serviceName, *fuc.FunctionName)); err != nil {
+
+			output, err := client.DeleteFunction(
+				fc.NewDeleteFunctionInput(serviceName, *fuc.FunctionName),
+			)
+			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			} else {
 				fmt.Printf("DeleteFunction response: %s \n", output)

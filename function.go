@@ -163,7 +163,7 @@ func (i *CreateFunctionInput) GetPayload() interface{} {
 
 func (i *CreateFunctionInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if i.err != nil {
 		return i.err
@@ -287,10 +287,10 @@ func (i *UpdateFunctionInput) GetPayload() interface{} {
 
 func (i *UpdateFunctionInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("Function name is required but not provided")
+		return fmt.Errorf("function name is required but not provided")
 	}
 	if i.err != nil {
 		return i.err
@@ -350,10 +350,10 @@ func (i *GetFunctionInput) GetPayload() interface{} {
 
 func (i *GetFunctionInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("Function name is required but not provided")
+		return fmt.Errorf("function name is required but not provided")
 	}
 	return nil
 }

@@ -329,7 +329,7 @@ func (c *Client) sendRequest(input ServiceInput, httpMethod string) (*resty.Resp
 	var serviceError = new(ServiceError)
 	path := "/" + c.Config.APIVersion + input.GetPath()
 
-	headerParams := make(map[string]string)
+	headerParams := make(Header)
 	for k, v := range input.GetHeaders() {
 		headerParams[k] = v
 	}
@@ -362,8 +362,20 @@ func (c *Client) sendRequest(input ServiceInput, httpMethod string) (*resty.Resp
 	if c.Config.SecurityToken != "" {
 		headerParams[HTTPHeaderSecurityToken] = c.Config.SecurityToken
 	}
-	headerParams["Authorization"] = GetAuthStr(c.Config.AccessKeyID, c.Config.AccessKeySecret, httpMethod, headerParams, path)
-	resp, err := c.Connect.SendRequest(c.Config.Endpoint+path, httpMethod, rawBody, headerParams, input.GetQueryParams())
+	headerParams["Authorization"] = GetAuthStr(
+		c.Config.AccessKeyID,
+		c.Config.AccessKeySecret,
+		httpMethod,
+		headerParams,
+		path,
+	)
+	resp, err := c.Connect.SendRequest(
+		c.Config.Endpoint+path,
+		httpMethod,
+		rawBody,
+		headerParams,
+		input.GetQueryParams(),
+	)
 	if err != nil {
 		return nil, err
 	}

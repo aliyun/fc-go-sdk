@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty"
-	"time"
 )
 
 // default parameter
@@ -40,7 +40,7 @@ func NewConnection() *Connection {
 
 // PrepareRequest prepare http request
 func (conn *Connection) PrepareRequest(postBody interface{},
-	headerParams map[string]string,
+	headerParams Header,
 	queryParams url.Values) *resty.Request {
 
 	request := resty.R()
@@ -63,7 +63,7 @@ func (conn *Connection) PrepareRequest(postBody interface{},
 // SendRequest send http request
 func (conn *Connection) SendRequest(path string, method string,
 	postBody interface{},
-	headerParams map[string]string,
+	headerParams Header,
 	queryParams url.Values) (*resty.Response, error) {
 
 	request := conn.PrepareRequest(postBody, headerParams, queryParams)

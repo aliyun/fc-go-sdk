@@ -22,16 +22,16 @@ func HasPrefix(s, prefix string) bool {
 
 // GetAccessPoint get correct endpoint and host
 func GetAccessPoint(endpointInput string) (endpoint, host string) {
-	httpPrefix := "http://"
-	httpsPrefix := "https://"
-	if HasPrefix(endpointInput, httpPrefix) {
-		host = endpointInput[len(httpPrefix):]
+	unsecuredPrefix := "http://"
+	securedPrefix := "https://"
+	if HasPrefix(endpointInput, unsecuredPrefix) {
+		host = endpointInput[len(unsecuredPrefix):]
 		return endpointInput, host
-	} else if HasPrefix(endpointInput, httpsPrefix) {
-		host = endpointInput[len(httpsPrefix):]
+	} else if HasPrefix(endpointInput, securedPrefix) {
+		host = endpointInput[len(securedPrefix):]
 		return endpointInput, host
 	}
-	return httpPrefix + endpointInput, endpointInput
+	return unsecuredPrefix + endpointInput, endpointInput
 }
 
 // IsBlank :check string pointer is nil or empty

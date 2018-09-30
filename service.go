@@ -90,34 +90,34 @@ func NewCreateServiceInput() *CreateServiceInput {
 	return &CreateServiceInput{}
 }
 
-func (s *CreateServiceInput) WithServiceName(serviceName string) *CreateServiceInput {
-	s.ServiceName = &serviceName
-	return s
+func (i *CreateServiceInput) WithServiceName(serviceName string) *CreateServiceInput {
+	i.ServiceName = &serviceName
+	return i
 }
 
-func (s *CreateServiceInput) WithDescription(description string) *CreateServiceInput {
-	s.Description = &description
-	return s
+func (i *CreateServiceInput) WithDescription(description string) *CreateServiceInput {
+	i.Description = &description
+	return i
 }
 
-func (s *CreateServiceInput) WithRole(role string) *CreateServiceInput {
-	s.Role = &role
-	return s
+func (i *CreateServiceInput) WithRole(role string) *CreateServiceInput {
+	i.Role = &role
+	return i
 }
 
-func (s *CreateServiceInput) WithLogConfig(logConfig *LogConfig) *CreateServiceInput {
-	s.LogConfig = logConfig
-	return s
+func (i *CreateServiceInput) WithLogConfig(logConfig *LogConfig) *CreateServiceInput {
+	i.LogConfig = logConfig
+	return i
 }
 
-func (s *CreateServiceInput) WithVPCConfig(vpcConfig *VPCConfig) *CreateServiceInput {
-	s.VPCConfig = vpcConfig
-	return s
+func (i *CreateServiceInput) WithVPCConfig(vpcConfig *VPCConfig) *CreateServiceInput {
+	i.VPCConfig = vpcConfig
+	return i
 }
 
-func (s *CreateServiceInput) WithInternetAccess(access bool) *CreateServiceInput {
-	s.InternetAccess = &access
-	return s
+func (i *CreateServiceInput) WithInternetAccess(access bool) *CreateServiceInput {
+	i.InternetAccess = &access
+	return i
 }
 
 func (i *CreateServiceInput) GetQueryParams() url.Values {
@@ -182,34 +182,34 @@ func NewUpdateServiceInput(serviceName string) *UpdateServiceInput {
 	return &UpdateServiceInput{ServiceName: &serviceName}
 }
 
-func (s *UpdateServiceInput) WithDescription(description string) *UpdateServiceInput {
-	s.Description = &description
-	return s
+func (i *UpdateServiceInput) WithDescription(description string) *UpdateServiceInput {
+	i.Description = &description
+	return i
 }
 
-func (s *UpdateServiceInput) WithRole(role string) *UpdateServiceInput {
-	s.Role = &role
-	return s
+func (i *UpdateServiceInput) WithRole(role string) *UpdateServiceInput {
+	i.Role = &role
+	return i
 }
 
-func (s *UpdateServiceInput) WithLogConfig(logConfig *LogConfig) *UpdateServiceInput {
-	s.LogConfig = logConfig
-	return s
+func (i *UpdateServiceInput) WithLogConfig(logConfig *LogConfig) *UpdateServiceInput {
+	i.LogConfig = logConfig
+	return i
 }
 
-func (s *UpdateServiceInput) WithVPCConfig(vpcConfig *VPCConfig) *UpdateServiceInput {
-	s.VPCConfig = vpcConfig
-	return s
+func (i *UpdateServiceInput) WithVPCConfig(vpcConfig *VPCConfig) *UpdateServiceInput {
+	i.VPCConfig = vpcConfig
+	return i
 }
 
-func (s *UpdateServiceInput) WithInternetAccess(access bool) *UpdateServiceInput {
-	s.InternetAccess = &access
-	return s
+func (i *UpdateServiceInput) WithInternetAccess(access bool) *UpdateServiceInput {
+	i.InternetAccess = &access
+	return i
 }
 
-func (s *UpdateServiceInput) WithIfMatch(ifMatch string) *UpdateServiceInput {
-	s.IfMatch = &ifMatch
-	return s
+func (i *UpdateServiceInput) WithIfMatch(ifMatch string) *UpdateServiceInput {
+	i.IfMatch = &ifMatch
+	return i
 }
 
 func (i *UpdateServiceInput) GetQueryParams() url.Values {
@@ -235,7 +235,7 @@ func (i *UpdateServiceInput) GetPayload() interface{} {
 
 func (i *UpdateServiceInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	return nil
 }
@@ -407,7 +407,7 @@ func (i *GetServiceInput) GetPayload() interface{} {
 
 func (i *GetServiceInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	return nil
 }
@@ -449,7 +449,7 @@ func (i *DeleteServiceInput) GetPayload() interface{} {
 
 func (i *DeleteServiceInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	return nil
 }

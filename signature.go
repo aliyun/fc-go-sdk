@@ -18,7 +18,13 @@ type headers struct {
 }
 
 // GetAuthStr get signature strings
-func GetAuthStr(accessKeyID string, accessKeySecret string, method string, header map[string]string, resource string) string {
+func GetAuthStr(
+	accessKeyID string,
+	accessKeySecret string,
+	method string,
+	header Header,
+	resource string,
+) string {
 	return "FC " + accessKeyID + ":" + GetSignature(accessKeySecret, method, header, resource)
 }
 
@@ -55,7 +61,11 @@ func GetSignature(key string, method string, req map[string]string, fcResource s
 		fcHeaders += header.Keys[i] + ":" + header.Vals[i] + "\n"
 	}
 
-	signStr := method + "\n" + req[HTTPHeaderContentMD5] + "\n" + req[HTTPHeaderContentType] + "\n" + req[HTTPHeaderDate] + "\n" + fcHeaders + fcResource
+	signStr := method + "\n" +
+		req[HTTPHeaderContentMD5] + "\n" +
+		req[HTTPHeaderContentType] + "\n" +
+		req[HTTPHeaderDate] + "\n" +
+		fcHeaders + fcResource
 
 	h := hmac.New(func() hash.Hash { return sha256.New() }, []byte(key))
 	io.WriteString(h, signStr)

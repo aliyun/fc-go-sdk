@@ -14,7 +14,7 @@ type accountSettings struct {
 	AvailableAZs []string `json:"availableAZs"`
 }
 
-// GetAccountSettingsInput defines get account settings intput.
+// GetAccountSettingsInput defines get account settings input.
 type GetAccountSettingsInput struct {
 }
 

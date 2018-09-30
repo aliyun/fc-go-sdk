@@ -4,6 +4,16 @@ import (
 	"testing"
 )
 
+const (
+	expectedResource = "/path/action with space\n" +
+		"foo=bar\n" +
+		"key1=abc\n" +
+		"key1=xyz\n" +
+		"key2=123\n" +
+		"key3/~x-y_z.a#b=value/~x-y_z.a#b\n" +
+		"xyz"
+)
+
 func TestGetSignResourceWithQueries(t *testing.T) {
 	path := "/path/action with space"
 	queries := map[string][]string{
@@ -15,7 +25,6 @@ func TestGetSignResourceWithQueries(t *testing.T) {
 	}
 	resource := GetSignResourceWithQueries(path, queries)
 
-	expectedResource := "/path/action with space\nfoo=bar\nkey1=abc\nkey1=xyz\nkey2=123\nkey3/~x-y_z.a#b=value/~x-y_z.a#b\nxyz"
 	if resource != expectedResource {
 		t.Fatalf("%s expected but %s in actual", expectedResource, resource)
 	}

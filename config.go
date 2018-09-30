@@ -16,15 +16,16 @@ type Config struct {
 
 // NewConfig get default config
 func NewConfig() *Config {
-	config := Config{}
-	config.Endpoint = ""
-	config.AccessKeyID = ""
-	config.AccessKeySecret = ""
-	config.SecurityToken = ""
-	config.IsDebug = false
-	config.UserAgent = "go-sdk-0.1"
-	config.Timeout = 60
-	config.APIVersion = "2016-08-15"
-	config.host = ""
-	return &config
+	return &Config{
+		Endpoint:        "",
+		APIVersion:      "2016-08-15",
+		AccountID:       "",
+		AccessKeyID:     "",
+		AccessKeySecret: "",
+		SecurityToken:   "",
+		UserAgent:       "go-sdk-0.1",
+		IsDebug:         false,
+		Timeout:         60,
+		host:            "",
+	}
 }

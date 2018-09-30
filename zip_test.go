@@ -9,7 +9,7 @@ import (
 )
 
 func TestZipEmptyDir(t *testing.T) {
-	// Cleanup the last data to prevent from confliction.
+	// Cleanup the last data to prevent conflicts.
 	os.RemoveAll("/tmp/TestZipEmptyDir/")
 
 	// Create directory with empty sub-directory.
@@ -45,7 +45,7 @@ func TestZipEmptyDir(t *testing.T) {
 
 	f, err = os.Open("/tmp/TestZipEmptyDir/dst")
 	entries, err := f.Readdir(-1)
-	// 3 elems: zip file, empty dir and a file.
+	// 3 elements: zip file, empty dir and a file.
 	if len(entries) != 3 {
 		t.Fatalf("%v", entries)
 	}
@@ -62,7 +62,7 @@ func TestZipEmptyDir(t *testing.T) {
 }
 
 func TestZipDirWithSymbolLinks(t *testing.T)  {
-	// Cleanup the last data to prevent from confliction.
+	// Cleanup the last data to prevent conflicts.
 	os.RemoveAll("./TestZipDirWithSymbolLinks/")
 
 	// Create file and symbol links.
@@ -104,7 +104,7 @@ func TestZipDirWithSymbolLinks(t *testing.T)  {
 	// Verify the file attributes.
 	dir, err := os.Open("./TestZipDirWithSymbolLinks/dst")
 	entries, err := dir.Readdir(-1)
-	// 3 elems: zip file, file and its links.
+	// 3 elements: zip file, file and its links.
 	if len(entries) != 3 {
 		t.Fatalf("%v", entries)
 	}

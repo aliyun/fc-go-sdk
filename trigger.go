@@ -83,10 +83,10 @@ func (i *CreateTriggerInput) GetPayload() interface{} {
 
 func (i *CreateTriggerInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("Function name is required but not provided")
+		return fmt.Errorf("function name is required but not provided")
 	}
 	if i.err != nil {
 		return i.err
@@ -147,7 +147,9 @@ type triggerMetadataAlias triggerMetadata
 // UnmarshalJSON unmarshals the data to trigger metadata and sets TriggerConfig field to an actual trigger config.
 // User can use type switches/assertion to get the actual trigger config.
 func (m *triggerMetadata) UnmarshalJSON(data []byte) error {
-	// use triggerMetadataAlias instead of triggerMetadata to avoid recursive calls because Unmarshal calls UnmarshalJSON.
+
+	// use triggerMetadataAlias instead of triggerMetadata
+	// to avoid recursive calls because Unmarshal calls UnmarshalJSON.
 	tmp := triggerMetadataAlias{}
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
@@ -289,7 +291,12 @@ func (i *GetTriggerInput) GetQueryParams() url.Values {
 }
 
 func (i *GetTriggerInput) GetPath() string {
-	return fmt.Sprintf(singleTriggerPath, pathEscape(*i.ServiceName), pathEscape(*i.FunctionName), pathEscape(*i.TriggerName))
+	return fmt.Sprintf(
+		singleTriggerPath,
+		pathEscape(*i.ServiceName),
+		pathEscape(*i.FunctionName),
+		pathEscape(*i.TriggerName),
+	)
 }
 
 func (i *GetTriggerInput) GetHeaders() Header {
@@ -302,13 +309,13 @@ func (i *GetTriggerInput) GetPayload() interface{} {
 
 func (i *GetTriggerInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("Function name is required but not provided")
+		return fmt.Errorf("function name is required but not provided")
 	}
 	if IsBlank(i.TriggerName) {
-		return fmt.Errorf("Trigger name is required but not provided")
+		return fmt.Errorf("trigger name is required but not provided")
 	}
 	return nil
 }
@@ -383,9 +390,9 @@ func (i *UpdateTriggerInput) WithTriggerConfig(config interface{}) *UpdateTrigge
 	return i
 }
 
-func (s *UpdateTriggerInput) WithIfMatch(ifMatch string) *UpdateTriggerInput {
-	s.IfMatch = &ifMatch
-	return s
+func (i *UpdateTriggerInput) WithIfMatch(ifMatch string) *UpdateTriggerInput {
+	i.IfMatch = &ifMatch
+	return i
 }
 
 func (i *UpdateTriggerInput) GetQueryParams() url.Values {
@@ -394,7 +401,12 @@ func (i *UpdateTriggerInput) GetQueryParams() url.Values {
 }
 
 func (i *UpdateTriggerInput) GetPath() string {
-	return fmt.Sprintf(singleTriggerPath, pathEscape(*i.ServiceName), pathEscape(*i.FunctionName), pathEscape(*i.TriggerName))
+	return fmt.Sprintf(
+		singleTriggerPath,
+		pathEscape(*i.ServiceName),
+		pathEscape(*i.FunctionName),
+		pathEscape(*i.TriggerName),
+	)
 }
 
 func (i *UpdateTriggerInput) GetHeaders() Header {
@@ -411,13 +423,13 @@ func (i *UpdateTriggerInput) GetPayload() interface{} {
 
 func (i *UpdateTriggerInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("Function name is required but not provided")
+		return fmt.Errorf("function name is required but not provided")
 	}
 	if IsBlank(i.TriggerName) {
-		return fmt.Errorf("Trigger name is required but not provided")
+		return fmt.Errorf("trigger name is required but not provided")
 	}
 	if i.err != nil {
 		return i.err
@@ -528,10 +540,10 @@ func (i *ListTriggersInput) GetPayload() interface{} {
 
 func (i *ListTriggersInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("Function name is required but not provided")
+		return fmt.Errorf("function name is required but not provided")
 	}
 	return nil
 }
@@ -570,9 +582,9 @@ func NewDeleteTriggerInput(serviceName string, functionName string, triggerName 
 	}
 }
 
-func (s *DeleteTriggerInput) WithIfMatch(ifMatch string) *DeleteTriggerInput {
-	s.IfMatch = &ifMatch
-	return s
+func (i *DeleteTriggerInput) WithIfMatch(ifMatch string) *DeleteTriggerInput {
+	i.IfMatch = &ifMatch
+	return i
 }
 
 func (i *DeleteTriggerInput) GetQueryParams() url.Values {
@@ -581,7 +593,12 @@ func (i *DeleteTriggerInput) GetQueryParams() url.Values {
 }
 
 func (i *DeleteTriggerInput) GetPath() string {
-	return fmt.Sprintf(singleTriggerPath, pathEscape(*i.ServiceName), pathEscape(*i.FunctionName), pathEscape(*i.TriggerName))
+	return fmt.Sprintf(
+		singleTriggerPath,
+		pathEscape(*i.ServiceName),
+		pathEscape(*i.FunctionName),
+		pathEscape(*i.TriggerName),
+	)
 }
 
 func (i *DeleteTriggerInput) GetHeaders() Header {
@@ -598,13 +615,13 @@ func (i *DeleteTriggerInput) GetPayload() interface{} {
 
 func (i *DeleteTriggerInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
+		return fmt.Errorf("service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("Function name is required but not provided")
+		return fmt.Errorf("function name is required but not provided")
 	}
 	if IsBlank(i.TriggerName) {
-		return fmt.Errorf("Trigger name is required but not provided")
+		return fmt.Errorf("trigger name is required but not provided")
 	}
 	return nil
 }
