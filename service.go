@@ -1,6 +1,7 @@
 package fc
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -8,26 +9,19 @@ import (
 )
 
 const (
-	servicesPath           = "/services"
-	singleServicePath      = servicesPath + "/%s"
-	functionsPath          = singleServicePath + "/functions"
-	singleFunctionPath     = functionsPath + "/%s"
-	customDomainPath       = "/custom-domains"
-	singleCustomDomainPath = customDomainPath + "/%s"
-	functionCodePath       = singleFunctionPath + "/code"
-	triggersPath           = singleFunctionPath + "/triggers"
-	singleTriggerPath      = triggersPath + "/%s"
-	invokeFunctionPath     = singleFunctionPath + "/invocations"
+	servicesPath       = "/services"
+	singleServicePath  = servicesPath + "/%s"
+	functionsPath      = singleServicePath + "/functions"
+	singleFunctionPath = functionsPath + "/%s"
+	functionCodePath   = singleFunctionPath + "/code"
+	triggersPath       = singleFunctionPath + "/triggers"
+	singleTriggerPath  = triggersPath + "/%s"
+	invokeFunctionPath = singleFunctionPath + "/invocations"
 
 	printIndent = "  "
 
 	ifMatch = "If-Match"
 )
-
-type ServiceOutput interface {
-	String() string
-	SetHeader(header http.Header)
-}
 
 type ServiceInput interface {
 	GetQueryParams() url.Values
@@ -43,7 +37,6 @@ type LogConfig struct {
 	Logstore *string `json:"logstore"`
 }
 
-//noinspection GoUnusedExportedFunction
 func NewLogConfig() *LogConfig {
 	return &LogConfig{}
 }
@@ -64,7 +57,6 @@ type VPCConfig struct {
 	SecurityGroupID *string  `json:"securityGroupId"`
 }
 
-//noinspection GoUnusedExportedFunction
 func NewVPCConfig() *VPCConfig {
 	return &VPCConfig{}
 }
@@ -151,8 +143,24 @@ func (i *CreateServiceInput) Validate() error {
 
 // CreateServiceOutput define get service response
 type CreateServiceOutput struct {
+	Header http.Header
 	serviceMetadata
-	outputDecorator
+}
+
+func (o CreateServiceOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o CreateServiceOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+func (o CreateServiceOutput) GetEtag() string {
+	return GetEtag(o.Header)
 }
 
 // ServiceUpdateObject defines the service update fields
@@ -234,14 +242,46 @@ func (i *UpdateServiceInput) Validate() error {
 
 // UpdateServiceOutput define get service response
 type UpdateServiceOutput struct {
+	Header http.Header
 	serviceMetadata
-	outputDecorator
+}
+
+func (o UpdateServiceOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o UpdateServiceOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+func (o UpdateServiceOutput) GetEtag() string {
+	return GetEtag(o.Header)
 }
 
 // GetServiceOutput define get service response
 type GetServiceOutput struct {
+	Header http.Header
 	serviceMetadata
-	outputDecorator
+}
+
+func (o GetServiceOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o GetServiceOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+func (o GetServiceOutput) GetEtag() string {
+	return GetEtag(o.Header)
 }
 
 // serviceMetadata defines the detail service object
@@ -259,9 +299,20 @@ type serviceMetadata struct {
 
 // ListServicesOutput defines listServiceMetadata result
 type ListServicesOutput struct {
+	Header    http.Header
 	Services  []*serviceMetadata `json:"services"`
 	NextToken *string            `json:"nextToken,omitempty"`
-	outputDecorator
+}
+
+func (o ListServicesOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+func (o ListServicesOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
 }
 
 type ListServicesInput struct {
@@ -370,9 +421,9 @@ func NewDeleteServiceInput(serviceName string) *DeleteServiceInput {
 	return &DeleteServiceInput{ServiceName: &serviceName}
 }
 
-func (i *DeleteServiceInput) WithIfMatch(ifMatch string) *DeleteServiceInput {
-	i.IfMatch = &ifMatch
-	return i
+func (s *DeleteServiceInput) WithIfMatch(ifMatch string) *DeleteServiceInput {
+	s.IfMatch = &ifMatch
+	return s
 }
 
 func (i *DeleteServiceInput) GetQueryParams() url.Values {
@@ -404,5 +455,17 @@ func (i *DeleteServiceInput) Validate() error {
 }
 
 type DeleteServiceOutput struct {
-	outputDecorator
+	Header http.Header
+}
+
+func (o DeleteServiceOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o DeleteServiceOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
 }

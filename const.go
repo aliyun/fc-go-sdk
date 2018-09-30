@@ -3,7 +3,6 @@ package fc
 // OSSEvent represents the oss event type in oss trigger
 type OSSEvent string
 
-//noinspection GoUnusedConst
 const (
 	OSSEventObjectCreatedAll                     OSSEvent = "oss:ObjectCreated:*"
 	OSSEventObjectCreatedPutObject               OSSEvent = "oss:ObjectCreated:PutObject"

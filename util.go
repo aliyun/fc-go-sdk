@@ -3,7 +3,6 @@ package fc
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,36 +45,19 @@ func IsBlank(s *string) bool {
 	return false
 }
 
-type responseHeader struct {
-	Header http.Header
+// GetRequestID from headers
+func GetRequestID(header http.Header) string {
+	return header.Get(HTTPHeaderRequestID)
 }
 
-func (h *responseHeader) GetRequestID() string {
-	return h.Header.Get(HTTPHeaderRequestID)
+// GetErrorType get error type when call invocation
+func GetErrorType(header http.Header) string {
+	return header.Get(HTTPHeaderFCErrorType)
 }
 
-func (h *responseHeader) GetErrorType() string {
-	return h.Header.Get(HTTPHeaderFCErrorType)
-}
-
-func (h *responseHeader) GetEtag() string {
-	return h.Header.Get(HTTPHeaderEtag)
-}
-
-type outputDecorator struct {
-	responseHeader
-}
-
-func (o *outputDecorator) SetHeader(header http.Header) {
-	o.SetHeader(header)
-}
-
-func (o outputDecorator) String() string {
-	b, err := json.MarshalIndent(o, "", printIndent)
-	if err != nil {
-		return ""
-	}
-	return string(b)
+// GetEtag get resource etag
+func GetEtag(header http.Header) string {
+	return header.Get(HTTPHeaderEtag)
 }
 
 func pathEscape(s string) string {

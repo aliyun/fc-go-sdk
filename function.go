@@ -3,8 +3,10 @@ package fc
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -170,8 +172,24 @@ func (i *CreateFunctionInput) Validate() error {
 }
 
 type CreateFunctionOutput struct {
+	Header http.Header
 	functionMetadata
-	outputDecorator
+}
+
+func (o CreateFunctionOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+func (o CreateFunctionOutput) GetEtag() string {
+	return GetEtag(o.Header)
+}
+
+func (o CreateFunctionOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
 
 // FunctionUpdateObject defines update fields in Function
@@ -241,9 +259,9 @@ func (i *UpdateFunctionInput) WithEnvironmentVariables(env map[string]string) *U
 	return i
 }
 
-func (i *UpdateFunctionInput) WithIfMatch(ifMatch string) *UpdateFunctionInput {
-	i.IfMatch = &ifMatch
-	return i
+func (s *UpdateFunctionInput) WithIfMatch(ifMatch string) *UpdateFunctionInput {
+	s.IfMatch = &ifMatch
+	return s
 }
 
 func (i *UpdateFunctionInput) GetQueryParams() url.Values {
@@ -281,8 +299,24 @@ func (i *UpdateFunctionInput) Validate() error {
 }
 
 type UpdateFunctionOutput struct {
+	Header http.Header
 	functionMetadata
-	outputDecorator
+}
+
+func (o UpdateFunctionOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o UpdateFunctionOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+func (o UpdateFunctionOutput) GetEtag() string {
+	return GetEtag(o.Header)
 }
 
 type GetFunctionInput struct {
@@ -326,8 +360,24 @@ func (i *GetFunctionInput) Validate() error {
 
 // GetFunctionOutput define function response from fc
 type GetFunctionOutput struct {
+	Header http.Header
 	functionMetadata
-	outputDecorator
+}
+
+func (o GetFunctionOutput) GetEtag() string {
+	return GetEtag(o.Header)
+}
+
+func (o GetFunctionOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+func (o GetFunctionOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
 
 // functionMetadata define the function metadata
@@ -352,7 +402,6 @@ type GetFunctionCodeInput struct {
 }
 
 // NewGetFunctionCodeInput ...
-//noinspection GoUnusedExportedFunction
 func NewGetFunctionCodeInput(serviceName string, functionName string) *GetFunctionCodeInput {
 	return &GetFunctionCodeInput{
 		&GetFunctionInput{
@@ -373,15 +422,41 @@ type functionCodeMetadata struct {
 
 // GetFunctionCodeOutput define function response from fc
 type GetFunctionCodeOutput struct {
+	Header http.Header
 	functionCodeMetadata
-	outputDecorator
+}
+
+// GetRequestID ...
+func (o GetFunctionCodeOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+// String ...
+func (o GetFunctionCodeOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
 
 // ListFunctionsOutput defines the function response list
 type ListFunctionsOutput struct {
+	Header    http.Header
 	Functions []*functionMetadata `json:"functions"`
 	NextToken *string             `json:"nextToken,omitempty"`
-	outputDecorator
+}
+
+func (o ListFunctionsOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o ListFunctionsOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
 }
 
 type ListFunctionsInput struct {
@@ -448,7 +523,7 @@ func (i *ListFunctionsInput) GetPayload() interface{} {
 
 func (i *ListFunctionsInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("service name is required but not provided")
+		return fmt.Errorf("Service name is required but not provided")
 	}
 	return nil
 }
@@ -466,9 +541,9 @@ func NewDeleteFunctionInput(serviceName string, functionName string) *DeleteFunc
 	}
 }
 
-func (i *DeleteFunctionInput) WithIfMatch(ifMatch string) *DeleteFunctionInput {
-	i.IfMatch = &ifMatch
-	return i
+func (s *DeleteFunctionInput) WithIfMatch(ifMatch string) *DeleteFunctionInput {
+	s.IfMatch = &ifMatch
+	return s
 }
 
 func (i *DeleteFunctionInput) GetQueryParams() url.Values {
@@ -494,16 +569,28 @@ func (i *DeleteFunctionInput) GetPayload() interface{} {
 
 func (i *DeleteFunctionInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("service name is required but not provided")
+		return fmt.Errorf("Service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("function name is required but not provided")
+		return fmt.Errorf("Function name is required but not provided")
 	}
 	return nil
 }
 
 type DeleteFunctionOutput struct {
-	outputDecorator
+	Header http.Header
+}
+
+func (o DeleteFunctionOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o DeleteFunctionOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
 }
 
 type InvokeFunctionInput struct {
@@ -574,24 +661,42 @@ func (i *InvokeFunctionInput) GetPayload() interface{} {
 
 func (i *InvokeFunctionInput) Validate() error {
 	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("service name is required but not provided")
+		return fmt.Errorf("Service name is required but not provided")
 	}
 	if IsBlank(i.FunctionName) {
-		return fmt.Errorf("function name is required but not provided")
+		return fmt.Errorf("Function name is required but not provided")
 	}
 	return nil
 }
 
 type InvokeFunctionOutput struct {
+	Header  http.Header
 	Payload []byte
-	outputDecorator
+}
+
+func (o InvokeFunctionOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o InvokeFunctionOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
+// GetErrorType returns error type occurred in function invocations
+// will be empty string when no errors
+func (o InvokeFunctionOutput) GetErrorType() string {
+	return GetErrorType(o.Header)
 }
 
 // GetLogResult returns LogResults for the invocation
 func (o InvokeFunctionOutput) GetLogResult() (string, error) {
-	b, err := base64.StdEncoding.DecodeString(o.Header.Get(HTTPHeaderInvocationLogResult))
+	bytes, err := base64.StdEncoding.DecodeString(o.Header.Get(HTTPHeaderInvocationLogResult))
 	if err != nil {
 		return "", err
 	}
-	return string(b), nil
+	return string(bytes), nil
 }

@@ -1,11 +1,11 @@
 package fc
 
 import (
-	"io/ioutil"
+	"testing"
 	"os"
 	"os/exec"
+	"io/ioutil"
 	"path/filepath"
-	"testing"
 )
 
 func TestZipEmptyDir(t *testing.T) {

@@ -17,7 +17,7 @@ type Config struct {
 // NewConfig get default config
 func NewConfig() *Config {
 	return &Config{
-		Endpoint:		 "",
+		Endpoint:        "",
 		APIVersion:      "2016-08-15",
 		AccountID:       "",
 		AccessKeyID:     "",

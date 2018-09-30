@@ -1,6 +1,8 @@
 package fc
 
 import (
+	"encoding/json"
+	"net/http"
 	"net/url"
 )
 
@@ -16,7 +18,6 @@ type accountSettings struct {
 type GetAccountSettingsInput struct {
 }
 
-//noinspection GoUnusedExportedFunction
 func NewGetAccountSettingsInput() *GetAccountSettingsInput {
 	return new(GetAccountSettingsInput)
 }
@@ -44,6 +45,18 @@ func (o GetAccountSettingsInput) Validate() error {
 
 // GetAccountSettingsOutput defines get account settings output.
 type GetAccountSettingsOutput struct {
+	Header http.Header
 	accountSettings
-	outputDecorator
+}
+
+func (o GetAccountSettingsOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o GetAccountSettingsOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
 }
