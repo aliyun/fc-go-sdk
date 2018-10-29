@@ -17,6 +17,16 @@ const (
 	triggersPath       = singleFunctionPath + "/triggers"
 	singleTriggerPath  = triggersPath + "/%s"
 	invokeFunctionPath = singleFunctionPath + "/invocations"
+	versionsPath       = singleServicePath + "/versions"
+	singleVersionPath  = versionsPath + "/%s"
+	aliasesPath        = singleServicePath + "/aliases"
+	singleAliasPath    = aliasesPath + "/%s"
+
+	singleServiceWithQualifierPath = servicesPath + "/%s$%s"
+	functionsPathWithQualifierPath = singleServiceWithQualifierPath + "/functions"
+	singleFunctionWithQualifierPath = functionsPathWithQualifierPath + "/%s"
+	functionCodeWithQualifierPath   = singleFunctionWithQualifierPath + "/code"
+	invokeFunctionWithQualifierPath = singleFunctionWithQualifierPath + "/invocations"
 
 	printIndent = "  "
 
@@ -382,10 +392,16 @@ func (i *ListServicesInput) Validate() error {
 
 type GetServiceInput struct {
 	ServiceName *string
+	Qualifier   *string
 }
 
 func NewGetServiceInput(serviceName string) *GetServiceInput {
 	return &GetServiceInput{ServiceName: &serviceName}
+}
+
+func (i *GetServiceInput) WithQualifier(qualifier string) *GetServiceInput {
+	i.Qualifier = &qualifier
+	return i
 }
 
 func (i *GetServiceInput) GetQueryParams() url.Values {
@@ -394,6 +410,9 @@ func (i *GetServiceInput) GetQueryParams() url.Values {
 }
 
 func (i *GetServiceInput) GetPath() string {
+	if !IsBlank(i.Qualifier) {
+		return fmt.Sprintf(singleServiceWithQualifierPath, pathEscape(*i.ServiceName), pathEscape(*i.Qualifier))
+	}
 	return fmt.Sprintf(singleServicePath, pathEscape(*i.ServiceName))
 }
 

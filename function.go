@@ -322,6 +322,7 @@ func (o UpdateFunctionOutput) GetEtag() string {
 type GetFunctionInput struct {
 	ServiceName  *string
 	FunctionName *string
+	Qualifier    *string
 }
 
 func NewGetFunctionInput(serviceName string, functionName string) *GetFunctionInput {
@@ -331,12 +332,21 @@ func NewGetFunctionInput(serviceName string, functionName string) *GetFunctionIn
 	}
 }
 
+func (i *GetFunctionInput) WithQualifier(qualifier string) *GetFunctionInput {
+	i.Qualifier = &qualifier
+	return i
+}
+
 func (i *GetFunctionInput) GetQueryParams() url.Values {
 	out := url.Values{}
 	return out
 }
 
 func (i *GetFunctionInput) GetPath() string {
+	if !IsBlank(i.Qualifier) {
+		return fmt.Sprintf(singleFunctionWithQualifierPath,
+			pathEscape(*i.ServiceName), pathEscape(*i.Qualifier), pathEscape(*i.FunctionName))
+	}
 	return fmt.Sprintf(singleFunctionPath, pathEscape(*i.ServiceName), pathEscape(*i.FunctionName))
 }
 
@@ -411,10 +421,18 @@ func NewGetFunctionCodeInput(serviceName string, functionName string) *GetFuncti
 	}
 }
 
+func (i *GetFunctionCodeInput) WithQualifier(qualifier string) *GetFunctionCodeInput {
+	i.Qualifier = &qualifier
+	return i
+}
+
 // GetPath ...
 func (i *GetFunctionCodeInput) GetPath() string {
-	return fmt.Sprintf(functionCodePath, pathEscape(*i.ServiceName), pathEscape(*i.FunctionName))
-}
+	if !IsBlank(i.Qualifier) {
+		return fmt.Sprintf(functionCodeWithQualifierPath,
+			pathEscape(*i.ServiceName), pathEscape(*i.Qualifier), pathEscape(*i.FunctionName))
+	}
+	return fmt.Sprintf(functionCodePath, pathEscape(*i.ServiceName), pathEscape(*i.FunctionName))}
 
 type functionCodeMetadata struct {
 	URL string `json:"url"`
@@ -461,6 +479,7 @@ func (o ListFunctionsOutput) GetRequestID() string {
 
 type ListFunctionsInput struct {
 	ServiceName *string
+	Qualifier   *string
 	Query
 }
 
@@ -488,6 +507,11 @@ func (i *ListFunctionsInput) WithLimit(limit int32) *ListFunctionsInput {
 	return i
 }
 
+func (i *ListFunctionsInput) WithQualifier(qualifier string) *ListFunctionsInput {
+	i.Qualifier = &qualifier
+	return i
+}
+
 func (i *ListFunctionsInput) GetQueryParams() url.Values {
 	out := url.Values{}
 	if i.Prefix != nil {
@@ -510,6 +534,10 @@ func (i *ListFunctionsInput) GetQueryParams() url.Values {
 }
 
 func (i *ListFunctionsInput) GetPath() string {
+	if !IsBlank(i.Qualifier) {
+		return fmt.Sprintf(functionsPathWithQualifierPath,
+			pathEscape(*i.ServiceName), pathEscape(*i.Qualifier))
+	}
 	return fmt.Sprintf(functionsPath, pathEscape(*i.ServiceName))
 }
 
@@ -596,6 +624,7 @@ func (o DeleteFunctionOutput) GetRequestID() string {
 type InvokeFunctionInput struct {
 	ServiceName  *string
 	FunctionName *string
+	Qualifier    *string
 	Payload      *[]byte
 	headers      Header
 }
@@ -636,12 +665,21 @@ func (i *InvokeFunctionInput) WithSyncInvocation() *InvokeFunctionInput {
 	return i.WithInvocationType(invocationTypeSync)
 }
 
+func (i *InvokeFunctionInput) WithQualifier(qualifier string) *InvokeFunctionInput {
+	i.Qualifier = &qualifier
+	return i
+}
+
 func (i *InvokeFunctionInput) GetQueryParams() url.Values {
 	out := url.Values{}
 	return out
 }
 
 func (i *InvokeFunctionInput) GetPath() string {
+	if !IsBlank(i.Qualifier) {
+		return fmt.Sprintf(invokeFunctionWithQualifierPath,
+			pathEscape(*i.ServiceName), pathEscape(*i.Qualifier), pathEscape(*i.FunctionName))
+	}
 	return fmt.Sprintf(invokeFunctionPath, pathEscape(*i.ServiceName), pathEscape(*i.FunctionName))
 }
 
