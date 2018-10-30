@@ -59,6 +59,7 @@ func (s *FcClientTestSuite) TestService() {
 		WithServiceName(serviceName).
 		WithDescription("this is a service test for go sdk"))
 
+	assert.Equal("", err.Error())
 	assert.Nil(err)
 	assert.Equal(*createServiceOutput.ServiceName, serviceName)
 	assert.Equal(*createServiceOutput.Description, "this is a service test for go sdk")
@@ -129,6 +130,7 @@ func (s *FcClientTestSuite) TestFunction() {
 	_, err2 := client.CreateService(NewCreateServiceInput().
 		WithServiceName(serviceName).
 		WithDescription("this is a function test for go sdk"))
+	assert.Equal("", err2.Error())
 	assert.Nil(err2)
 
 	// CreateFunction
@@ -230,6 +232,7 @@ func (s *FcClientTestSuite) TestTrigger() {
 	_, err2 := client.CreateService(NewCreateServiceInput().
 		WithServiceName(serviceName).
 		WithDescription("this is a function test for go sdk"))
+	assert.Equal("", err2.Error())
 	assert.Nil(err2)
 
 	// CreateFunction
