@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	TRIGGER_TYPE_OSS   = "oss"
-	TRIGGER_TYPE_LOG   = "log"
-	TRIGGER_TYPE_TIMER = "timer"
-	TRIGGER_TYPE_HTTP  = "http"
+	TRIGGER_TYPE_OSS       = "oss"
+	TRIGGER_TYPE_LOG       = "log"
+	TRIGGER_TYPE_TIMER     = "timer"
+	TRIGGER_TYPE_HTTP      = "http"
+	TRIGGER_TYPE_MNS_TOPIC = "mns_topic"
 )
 
 // CreateTriggerInput defines trigger creation input
@@ -178,6 +179,12 @@ func (m *triggerMetadata) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		tmp.TriggerConfig = httpTriggerConfig
+	case TRIGGER_TYPE_MNS_TOPIC:
+		mnsTriggerConfig := &MnsTopicTriggerConfig{}
+		if err := json.Unmarshal(tmp.RawTriggerConfig, mnsTriggerConfig); err != nil {
+			return err
+		}
+		tmp.TriggerConfig = mnsTriggerConfig
 	default:
 		return ErrUnknownTriggerType
 	}
