@@ -1,20 +1,20 @@
 package fc
 
-
 import (
+	"fmt"
+	"math/rand"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"fmt"
-	"os"
-	"math/rand"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 func RandStringBytes(n int) string {
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letterBytes[rand.Int63() % int64(len(letterBytes))]
+		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
 	}
 	return string(b)
 }
@@ -26,9 +26,8 @@ var codeBucketName string = os.Getenv("CODE_BUCKET")
 var region string = os.Getenv("REGION")
 var accountID string = os.Getenv("ACCOUNT_ID")
 var invocationRole string = os.Getenv("INVOCATION_ROLE")
-var logProject string= os.Getenv("LOG_PROJECT")
+var logProject string = os.Getenv("LOG_PROJECT")
 var logStore string = os.Getenv("LOG_STORE")
-
 
 type FcClientTestSuite struct {
 	suite.Suite
@@ -42,11 +41,17 @@ func (s *FcClientTestSuite) TestService() {
 	assert := s.Require()
 
 	serviceName := fmt.Sprintf("go-service-%s", RandStringBytes(8))
-	client, err:= NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
+	client, err := NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
 	assert.Nil(err)
 
+	listServices, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix("go-service-"))
+	assert.Nil(err)
+	for _, serviceMetadata := range listServices.Services {
+		s.clearService(client, *serviceMetadata.ServiceName)
+	}
+
 	// clear
-	defer func(){
+	defer func() {
 		listServices, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix("go-service-"))
 		assert.Nil(err)
 		for _, serviceMetadata := range listServices.Services {
@@ -118,8 +123,8 @@ func (s *FcClientTestSuite) TestService() {
 
 func (s *FcClientTestSuite) TestFunction() {
 	assert := s.Require()
-	serviceName := fmt.Sprintf("go-service-%s", RandStringBytes(8))
-	client, err:= NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
+	serviceName := fmt.Sprintf("go-service-%s", RandStringBytes(10))
+	client, err := NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
 
 	assert.Nil(err)
 
@@ -137,8 +142,8 @@ func (s *FcClientTestSuite) TestFunction() {
 		WithDescription("go sdk test function").
 		WithHandler("hello_world.handler").WithRuntime("nodejs6").
 		WithCode(NewCode().
-		WithOSSBucketName(codeBucketName).
-		WithOSSObjectName("hello_world_nodejs")).
+			WithOSSBucketName(codeBucketName).
+			WithOSSObjectName("hello_world_nodejs.zip")).
 		WithTimeout(5)
 	createFunctionOutput, err := client.CreateFunction(createFunctionInput1)
 	assert.Nil(err)
@@ -215,12 +220,11 @@ func (s *FcClientTestSuite) TestFunction() {
 	assert.Equal(string(invokeOutput.Payload), "hello world")
 }
 
-
 func (s *FcClientTestSuite) TestTrigger() {
 	assert := s.Require()
-	serviceName := fmt.Sprintf("go-service-%s", RandStringBytes(8))
+	serviceName := fmt.Sprintf("go-service-%s", RandStringBytes(12))
 	functionName := fmt.Sprintf("go-function-%s", RandStringBytes(8))
-	client, err:= NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
+	client, err := NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
 
 	assert.Nil(err)
 
@@ -237,32 +241,31 @@ func (s *FcClientTestSuite) TestTrigger() {
 		WithDescription("go sdk test function").
 		WithHandler("main.my_handler").WithRuntime("python2.7").
 		WithCode(NewCode().
-		WithOSSBucketName(codeBucketName).
-		WithOSSObjectName("hello_world.zip")).
+			WithOSSBucketName(codeBucketName).
+			WithOSSObjectName("hello_world_nodejs.zip")).
 		WithTimeout(5)
 	_, errCreate := client.CreateFunction(createFunctionInput1)
 	assert.Nil(errCreate)
 
 	functionName2 := fmt.Sprintf("go-function-%s", RandStringBytes(8))
-	_, errReCreate := client.CreateFunction(createFunctionInput1.WithFunctionName(functionName2).WithHandler("main.wsgi_echo_handler"))
+	_, errReCreate := client.CreateFunction(createFunctionInput1.WithFunctionName(functionName2).WithHandler("hello_world.handler"))
 	assert.Nil(errReCreate)
 	s.testOssTrigger(client, serviceName, functionName)
 	s.testLogTrigger(client, serviceName, functionName)
 	s.testHttpTrigger(client, serviceName, functionName2)
 }
 
-
 func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, functionName string) {
 	assert := s.Require()
 	sourceArn := fmt.Sprintf("acs:oss:%s:%s:%s", region, accountID, codeBucketName)
 	prefix := "pre"
-        suffix := "suf"
+	suffix := "suf"
 	triggerName := "test-oss-trigger"
 
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
 		WithInvocationRole(invocationRole).WithTriggerType("oss").WithSourceARN(sourceArn).
 		WithTriggerConfig(
-		NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix(prefix).WithFilterKeySuffix(suffix))
+			NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix(prefix).WithFilterKeySuffix(suffix))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
@@ -270,7 +273,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
-	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName,"oss", sourceArn, invocationRole)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, "oss", sourceArn, invocationRole)
 
 	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).
 		WithTriggerConfig(NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:*"})))
@@ -291,7 +294,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 	_, errDelTrigger := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(errDelTrigger)
 
-	_, errDelTrigger2 := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, triggerName + "-new"))
+	_, errDelTrigger2 := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, triggerName+"-new"))
 	assert.Nil(errDelTrigger2)
 }
 
@@ -300,9 +303,9 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 	sourceArn := fmt.Sprintf("acs:log:%s:%s:project/%s", region, accountID, logProject)
 	triggerName := "test-log-trigger"
 
-	logTriggerConfig := NewLogTriggerConfig().WithSourceConfig(NewSourceConfig().WithLogstore(logStore+"_source")).
+	logTriggerConfig := NewLogTriggerConfig().WithSourceConfig(NewSourceConfig().WithLogstore(logStore + "_source")).
 		WithJobConfig(NewJobConfig().WithMaxRetryTime(10).WithTriggerInterval(60)).
-		WithFunctionParameter(map[string]interface{} {}).
+		WithFunctionParameter(map[string]interface{}{}).
 		WithLogConfig(NewJobLogConfig().WithProject(logProject).WithLogstore(logStore)).
 		WithEnable(false)
 
@@ -316,7 +319,7 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
-	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName,"log", sourceArn, invocationRole)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, "log", sourceArn, invocationRole)
 
 	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).
 		WithTriggerConfig(logTriggerConfig.WithEnable(true)))
@@ -341,7 +344,7 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
 		WithInvocationRole(invocationRole).WithTriggerType("http").WithSourceARN(sourceArn).
 		WithTriggerConfig(
-		NewHTTPTriggerConfig().WithAuthType("function").WithMethods("GET", "POST"))
+			NewHTTPTriggerConfig().WithAuthType("function").WithMethods("GET", "POST"))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
@@ -349,7 +352,7 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
-	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName,"http", sourceArn, invocationRole)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, "http", sourceArn, invocationRole)
 
 	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).
 		WithTriggerConfig(NewHTTPTriggerConfig().WithAuthType("anonymous").WithMethods("GET", "POST")))
@@ -371,7 +374,7 @@ func (s *FcClientTestSuite) checkTriggerResponse(triggerResp *triggerMetadata, t
 	assert.Equal(*triggerResp.TriggerType, triggerType)
 	if triggerType != "http" {
 		assert.Equal(*triggerResp.SourceARN, sourceArn)
-	}else{
+	} else {
 		assert.Nil(triggerResp.SourceARN)
 	}
 	assert.Equal(*triggerResp.InvocationRole, invocationRole)
@@ -379,8 +382,7 @@ func (s *FcClientTestSuite) checkTriggerResponse(triggerResp *triggerMetadata, t
 	assert.NotNil(*triggerResp.LastModifiedTime)
 }
 
-
-func (s *FcClientTestSuite) clearService(client *Client, serviceName string){
+func (s *FcClientTestSuite) clearService(client *Client, serviceName string) {
 	assert := s.Require()
 	// DeleteFunction
 	listFunctionsOutput, err := client.ListFunctions(NewListFunctionsInput(serviceName).WithLimit(10))
@@ -389,7 +391,7 @@ func (s *FcClientTestSuite) clearService(client *Client, serviceName string){
 		functionName := *fuc.FunctionName
 		listTriggersOutput, err := client.ListTriggers(NewListTriggersInput(serviceName, functionName))
 		assert.Nil(err)
-		for _, trigger := range listTriggersOutput.Triggers{
+		for _, trigger := range listTriggersOutput.Triggers {
 			_, errDelTrigger := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, *trigger.TriggerName))
 			assert.Nil(errDelTrigger)
 		}
