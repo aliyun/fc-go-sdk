@@ -10,14 +10,14 @@ import (
 
 var (
 	ListDirectionBackward = "BACKWARD"
-	ListDirectionForward = "FORWARD"
+	ListDirectionForward  = "FORWARD"
 )
 
 type versionMetadata struct {
-	VersionID        *string     `json:"versionId"`
-	Description      *string    `json:"description"`
-	CreatedTime      *string    `json:"createdTime"`
-	LastModifiedTime *string    `json:"lastModifiedTime"`
+	VersionID        *string `json:"versionId"`
+	Description      *string `json:"description"`
+	CreatedTime      *string `json:"createdTime"`
+	LastModifiedTime *string `json:"lastModifiedTime"`
 }
 
 type ServiceVersionPublishObject struct {
@@ -27,7 +27,7 @@ type ServiceVersionPublishObject struct {
 type PublishServiceVersionInput struct {
 	ServiceName *string
 	ServiceVersionPublishObject
-	IfMatch     *string
+	IfMatch *string
 }
 
 func NewPublishServiceVersionInput(serviceName string) *PublishServiceVersionInput {
@@ -241,4 +241,3 @@ func (o DeleteServiceVersionOutput) String() string {
 func (o DeleteServiceVersionOutput) GetRequestID() string {
 	return GetRequestID(o.Header)
 }
-

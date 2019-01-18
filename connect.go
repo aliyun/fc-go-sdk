@@ -7,8 +7,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/go-resty/resty"
 	"time"
+
+	"gopkg.in/resty.v1"
 )
 
 // default parameter
