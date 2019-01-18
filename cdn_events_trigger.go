@@ -2,10 +2,10 @@ package fc
 
 // CDNEventsTriggerConfig defines the cdn events trigger config
 type CDNEventsTriggerConfig struct {
-	EventName    *string 			`json:"eventName"`
-	EventVersion *string 			`json:"eventVersion"`
-	Notes        *string 			`json:"notes"`
-	Filter       map[string][]string 	`json:"filter"`
+	EventName    *string             `json:"eventName"`
+	EventVersion *string             `json:"eventVersion"`
+	Notes        *string             `json:"notes"`
+	Filter       map[string][]string `json:"filter"`
 }
 
 // NewCDNEventsTriggerConfig creates an empty CDNTEventsTriggerConfig
@@ -30,7 +30,7 @@ func (ctc *CDNEventsTriggerConfig) WithNotes(notes string) *CDNEventsTriggerConf
 
 func (ctc *CDNEventsTriggerConfig) WithFilter(filter map[string][]string) *CDNEventsTriggerConfig {
 	ctc.Filter = make(map[string][]string, len(filter))
-	for k,v := range filter {
+	for k, v := range filter {
 		ctc.Filter[k] = v
 	}
 	return ctc

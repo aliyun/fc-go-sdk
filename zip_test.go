@@ -1,11 +1,11 @@
 package fc
 
 import (
-	"testing"
+	"io/ioutil"
 	"os"
 	"os/exec"
-	"io/ioutil"
 	"path/filepath"
+	"testing"
 )
 
 func TestZipEmptyDir(t *testing.T) {
@@ -61,7 +61,7 @@ func TestZipEmptyDir(t *testing.T) {
 	}
 }
 
-func TestZipDirWithSymbolLinks(t *testing.T)  {
+func TestZipDirWithSymbolLinks(t *testing.T) {
 	// Cleanup the last data to prevent from confliction.
 	os.RemoveAll("./TestZipDirWithSymbolLinks/")
 
@@ -113,7 +113,7 @@ func TestZipDirWithSymbolLinks(t *testing.T)  {
 	if err != nil {
 		panic(err)
 	}
-	if info.Mode() & os.ModeSymlink == 0 {
+	if info.Mode()&os.ModeSymlink == 0 {
 		t.Fatalf("%v", info)
 	}
 

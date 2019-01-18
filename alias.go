@@ -9,21 +9,21 @@ import (
 )
 
 type aliasMetadata struct {
-	AliasName               *string           `json:"aliasName"`
+	AliasName               *string            `json:"aliasName"`
 	VersionID               *string            `json:"versionId"`
-	Description             *string           `json:"description"`
+	Description             *string            `json:"description"`
 	AdditionalVersionWeight map[string]float64 `json:"additionalVersionWeight"`
 }
 
 type AliasCreateObject struct {
-	AliasName               *string           `json:"aliasName"`
+	AliasName               *string            `json:"aliasName"`
 	VersionID               *string            `json:"versionId"`
-	Description             *string           `json:"description"`
+	Description             *string            `json:"description"`
 	AdditionalVersionWeight map[string]float64 `json:"additionalVersionWeight"`
 }
 
 type CreateAliasInput struct {
-	ServiceName             *string           `json:"serviceName"`
+	ServiceName *string `json:"serviceName"`
 	AliasCreateObject
 }
 
@@ -98,7 +98,7 @@ func (o CreateAliasOutput) GetEtag() string {
 
 type AliasUpdateObject struct {
 	VersionID               *string            `json:"versionId"`
-	Description             *string           `json:"description"`
+	Description             *string            `json:"description"`
 	AdditionalVersionWeight map[string]float64 `json:"additionalVersionWeight"`
 }
 
@@ -106,7 +106,7 @@ type UpdateAliasInput struct {
 	ServiceName *string
 	AliasName   *string
 	AliasUpdateObject
-	IfMatch     *string
+	IfMatch *string
 }
 
 func NewUpdateAliasInput(serviceName, aliasName string) *UpdateAliasInput {
@@ -255,9 +255,9 @@ func (i *ListAliasesInput) Validate() error {
 }
 
 type ListAliasesOutput struct {
-	Header      http.Header
-	Aliases     []*aliasMetadata `json:"aliases"`
-	NextToken   *string          `json:"nextToken,omitempty"`
+	Header    http.Header
+	Aliases   []*aliasMetadata `json:"aliases"`
+	NextToken *string          `json:"nextToken,omitempty"`
 }
 
 func (o ListAliasesOutput) String() string {
