@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-resty/resty"
+	"gopkg.in/resty.v1"
 )
 
 // Client defines fc client
