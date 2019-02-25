@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -12,6 +13,7 @@ import (
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func RandStringBytes(n int) string {
+	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, n)
 	for i := range b {
 		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
@@ -39,12 +41,14 @@ func TestFcClient(t *testing.T) {
 
 func (s *FcClientTestSuite) TestService() {
 	assert := s.Require()
+	prefix := RandStringBytes(8)
+	serviceName := fmt.Sprintf("go-service-%s-%s", prefix, RandStringBytes(8))
+	serviceNamePrefix := fmt.Sprintf("go-service-%s", prefix)
 
-	serviceName := fmt.Sprintf("go-service-%s", RandStringBytes(8))
 	client, err := NewClient(endPoint, "2016-08-15", accessKeyId, accessKeySecret)
 	assert.Nil(err)
 
-	listServices, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix("go-service-"))
+	listServices, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix))
 	assert.Nil(err)
 	for _, serviceMetadata := range listServices.Services {
 		s.clearService(client, *serviceMetadata.ServiceName)
@@ -52,7 +56,7 @@ func (s *FcClientTestSuite) TestService() {
 
 	// clear
 	defer func() {
-		listServices, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix("go-service-"))
+		listServices, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix))
 		assert.Nil(err)
 		for _, serviceMetadata := range listServices.Services {
 			s.clearService(client, *serviceMetadata.ServiceName)
@@ -100,18 +104,18 @@ func (s *FcClientTestSuite) TestService() {
 	assert.NotNil(errNoMatch)
 
 	// ListServices
-	listServicesOutput, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix("go-service-"))
+	listServicesOutput, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix))
 	assert.Nil(err)
 	assert.Equal(len(listServicesOutput.Services), 1)
 	assert.Equal(*listServicesOutput.Services[0].ServiceName, serviceName)
 
 	for a := 0; a < 10; a++ {
-		listServiceName := fmt.Sprintf("go-service-%s", RandStringBytes(8))
+		listServiceName := fmt.Sprintf("go-service-%s-%s", prefix, RandStringBytes(8))
 		_, errListService := client.CreateService(NewCreateServiceInput().
 			WithServiceName(listServiceName).
 			WithDescription("this is a service test for go sdk"))
 		assert.Nil(errListService)
-		listServicesOutput, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix("go-service-"))
+		listServicesOutput, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix))
 		assert.Nil(err)
 		assert.Equal(len(listServicesOutput.Services), a+2)
 	}
@@ -258,8 +262,8 @@ func (s *FcClientTestSuite) TestTrigger() {
 func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, functionName string) {
 	assert := s.Require()
 	sourceArn := fmt.Sprintf("acs:oss:%s:%s:%s", region, accountID, codeBucketName)
-	prefix := "pre"
-	suffix := "suf"
+	prefix := fmt.Sprintf("pre%s", RandStringBytes(5))
+	suffix := fmt.Sprintf("suf%s", RandStringBytes(5))
 	triggerName := "test-oss-trigger"
 
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
