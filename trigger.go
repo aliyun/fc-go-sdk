@@ -27,6 +27,7 @@ type CreateTriggerInput struct {
 
 type TriggerCreateObject struct {
 	TriggerName    *string     `json:"triggerName"`
+	Description    *string     `json:"description"`
 	SourceARN      *string     `json:"sourceArn"`
 	TriggerType    *string     `json:"triggerType"`
 	InvocationRole *string     `json:"invocationRole"`
@@ -50,6 +51,11 @@ func (i *CreateTriggerInput) WithQualifier(qualifier string) *CreateTriggerInput
 
 func (i *CreateTriggerInput) WithTriggerName(name string) *CreateTriggerInput {
 	i.TriggerName = &name
+	return i
+}
+
+func (i *CreateTriggerInput) WithDescription(desc string) *CreateTriggerInput {
+	i.Description = &desc
 	return i
 }
 
@@ -129,6 +135,7 @@ func (o CreateTriggerOutput) MarshalJSON() ([]byte, error) {
 	return json.Marshal(triggerMetadataDisplay{
 		Header:           o.Header,
 		TriggerName:      o.TriggerName,
+		Description:      o.Description,
 		SourceARN:        o.SourceARN,
 		TriggerType:      o.TriggerType,
 		InvocationRole:   o.InvocationRole,
@@ -141,6 +148,7 @@ func (o CreateTriggerOutput) MarshalJSON() ([]byte, error) {
 
 type triggerMetadata struct {
 	TriggerName      *string         `json:"triggerName"`
+	Description      *string         `json:"description"`
 	TriggerID        *string         `json:"triggerID"`
 	SourceARN        *string         `json:"sourceArn"`
 	TriggerType      *string         `json:"triggerType"`
@@ -217,6 +225,7 @@ func (m *triggerMetadata) UnmarshalJSON(data []byte) error {
 type triggerMetadataDisplay struct {
 	Header           http.Header
 	TriggerName      *string     `json:"triggerName"`
+	Description      *string     `json:"description"`
 	SourceARN        *string     `json:"sourceArn"`
 	TriggerType      *string     `json:"triggerType"`
 	InvocationRole   *string     `json:"invocationRole"`
@@ -370,6 +379,7 @@ func (o GetTriggerOutput) MarshalJSON() ([]byte, error) {
 	return json.Marshal(triggerMetadataDisplay{
 		Header:           o.Header,
 		TriggerName:      o.TriggerName,
+		Description:      o.Description,
 		SourceARN:        o.SourceARN,
 		TriggerType:      o.TriggerType,
 		InvocationRole:   o.InvocationRole,
@@ -383,6 +393,7 @@ func (o GetTriggerOutput) MarshalJSON() ([]byte, error) {
 // TriggerUpdateObject defines update fields in Trigger
 type TriggerUpdateObject struct {
 	InvocationRole *string     `json:"invocationRole"`
+	Description    *string     `json:"description"`
 	TriggerConfig  interface{} `json:"triggerConfig"`
 	Qualifier      *string     `json:"qualifier"`
 
@@ -403,6 +414,11 @@ func NewUpdateTriggerInput(serviceName string, functionName string, triggerName 
 		FunctionName: &functionName,
 		TriggerName:  &triggerName,
 	}
+}
+
+func (i *UpdateTriggerInput) WithDescription(desc string) *UpdateTriggerInput {
+	i.Description = &desc
+	return i
 }
 
 func (i *UpdateTriggerInput) WithInvocationRole(role string) *UpdateTriggerInput {
@@ -488,6 +504,7 @@ func (o UpdateTriggerOutput) MarshalJSON() ([]byte, error) {
 	return json.Marshal(triggerMetadataDisplay{
 		Header:           o.Header,
 		TriggerName:      o.TriggerName,
+		Description:      o.Description,
 		SourceARN:        o.SourceARN,
 		TriggerType:      o.TriggerType,
 		InvocationRole:   o.InvocationRole,

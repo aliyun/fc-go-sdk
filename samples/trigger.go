@@ -17,8 +17,8 @@ func main() {
 	// Create trigger
 	fmt.Println("Creating trigger")
 	createTriggerInput := fc.NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
-		WithInvocationRole("acs:ram:cn-hangzhou:123:role1").WithTriggerType("oss").WithSourceARN("acs:oss:cn-hangzhou:123:fcbucket").
-		WithTriggerConfig(
+		WithDescription("create trigger").WithInvocationRole("acs:ram:cn-hangzhou:123:role1").WithTriggerType("oss").
+		WithSourceARN("acs:oss:cn-hangzhou:123:fcbucket").WithTriggerConfig(
 			fc.NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix("r").WithFilterKeySuffix("s"))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
@@ -29,8 +29,8 @@ func main() {
 	}
 
 	createTriggerInput2 := fc.NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName2).
-		WithInvocationRole("acs:ram:cn-hangzhou:123:role1").WithTriggerType("oss").WithSourceARN("acs:oss:cn-hangzhou:123:fcbucket").
-		WithQualifier(qualifier).WithTriggerConfig(
+		WithDescription("create trigger").WithInvocationRole("acs:ram:cn-hangzhou:123:role1").WithTriggerType("oss").
+		WithSourceARN("acs:oss:cn-hangzhou:123:fcbucket").WithQualifier(qualifier).WithTriggerConfig(
 		fc.NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix("r").WithFilterKeySuffix("s"))
 
 	createTriggerOutput2, err := client.CreateTrigger(createTriggerInput2)
@@ -54,14 +54,14 @@ func main() {
 		fmt.Printf("GetTrigger response: %s \n", getTriggerOutput2)
 	}
 
-	updateTriggerOutput, err := client.UpdateTrigger(fc.NewUpdateTriggerInput(serviceName, functionName, triggerName).WithInvocationRole("acs:ram:cn-hangzhou:123:role2"))
+	updateTriggerOutput, err := client.UpdateTrigger(fc.NewUpdateTriggerInput(serviceName, functionName, triggerName).WithDescription("update trigger").WithInvocationRole("acs:ram:cn-hangzhou:123:role2"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
 		fmt.Printf("UpdateTrigger response: %s \n", updateTriggerOutput)
 	}
 
-	updateTriggerOutput2, err := client.UpdateTrigger(fc.NewUpdateTriggerInput(serviceName, functionName, triggerName2).WithInvocationRole("acs:ram:cn-hangzhou:123:role2"))
+	updateTriggerOutput2, err := client.UpdateTrigger(fc.NewUpdateTriggerInput(serviceName, functionName, triggerName2).WithDescription("update trigger").WithInvocationRole("acs:ram:cn-hangzhou:123:role2"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
