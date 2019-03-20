@@ -261,28 +261,30 @@ func (s *FcClientTestSuite) TestTrigger() {
 
 func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, functionName string) {
 	assert := s.Require()
+	description := "create oss trigger"
 	sourceArn := fmt.Sprintf("acs:oss:%s:%s:%s", region, accountID, codeBucketName)
 	prefix := fmt.Sprintf("pre%s", RandStringBytes(5))
 	suffix := fmt.Sprintf("suf%s", RandStringBytes(5))
 	triggerName := "test-oss-trigger"
 
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
-		WithInvocationRole(invocationRole).WithTriggerType("oss").WithSourceARN(sourceArn).
-		WithTriggerConfig(
+		WithDescription(description).WithInvocationRole(invocationRole).WithTriggerType("oss").
+		WithSourceARN(sourceArn).WithTriggerConfig(
 			NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix(prefix).WithFilterKeySuffix(suffix))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
-	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, "oss", sourceArn, invocationRole)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, description, "oss", sourceArn, invocationRole)
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
-	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, "oss", sourceArn, invocationRole)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, description, "oss", sourceArn, invocationRole)
 
-	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).
+	updateTriggerDesc := "update oss trigger"
+	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).WithDescription(updateTriggerDesc).
 		WithTriggerConfig(NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:*"})))
 	assert.Nil(err)
-	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, "oss", sourceArn, invocationRole)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, updateTriggerDesc,"oss", sourceArn, invocationRole)
 	assert.Equal([]string{"oss:ObjectCreated:*"}, updateTriggerOutput.TriggerConfig.(*OSSTriggerConfig).Events)
 
 	listTriggersOutput, err := client.ListTriggers(NewListTriggersInput(serviceName, functionName))
@@ -305,6 +307,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, functionName string) {
 	assert := s.Require()
 	sourceArn := fmt.Sprintf("acs:log:%s:%s:project/%s", region, accountID, logProject)
+	description := "create los trigger"
 	triggerName := "test-log-trigger"
 
 	logTriggerConfig := NewLogTriggerConfig().WithSourceConfig(NewSourceConfig().WithLogstore(logStore + "_source")).
@@ -314,21 +317,22 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 		WithEnable(false)
 
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
-		WithInvocationRole(invocationRole).WithTriggerType("log").WithSourceARN(sourceArn).
-		WithTriggerConfig(logTriggerConfig)
+		WithDescription(description).WithInvocationRole(invocationRole).WithTriggerType("log").
+		WithSourceARN(sourceArn).WithTriggerConfig(logTriggerConfig)
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
-	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, "log", sourceArn, invocationRole)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, description,"log", sourceArn, invocationRole)
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
-	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, "log", sourceArn, invocationRole)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, description, "log", sourceArn, invocationRole)
 
+	updateTriggerDesc := "update los trigger"
 	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).
-		WithTriggerConfig(logTriggerConfig.WithEnable(true)))
+		WithDescription(updateTriggerDesc).WithTriggerConfig(logTriggerConfig.WithEnable(true)))
 	assert.Nil(err)
-	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, "log", sourceArn, invocationRole)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, updateTriggerDesc, "log", sourceArn, invocationRole)
 	assert.Equal(true, *updateTriggerOutput.TriggerConfig.(*LogTriggerConfig).Enable)
 
 	listTriggersOutput, err := client.ListTriggers(NewListTriggersInput(serviceName, functionName))
@@ -343,25 +347,28 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	assert := s.Require()
 	sourceArn := "dummy_arn"
 	invocationRole := ""
+	description := "create http trigger"
 	triggerName := "test-http-trigger"
 
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
-		WithInvocationRole(invocationRole).WithTriggerType("http").WithSourceARN(sourceArn).
-		WithTriggerConfig(
+		WithDescription(description).WithInvocationRole(invocationRole).WithTriggerType("http").
+		WithSourceARN(sourceArn).WithTriggerConfig(
 			NewHTTPTriggerConfig().WithAuthType("function").WithMethods("GET", "POST"))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
-	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, "http", sourceArn, invocationRole)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, description,"http", sourceArn, invocationRole)
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
-	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, "http", sourceArn, invocationRole)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, triggerName, description, "http", sourceArn, invocationRole)
 
+	updateTriggerDesc := "update http trigger"
 	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).
-		WithTriggerConfig(NewHTTPTriggerConfig().WithAuthType("anonymous").WithMethods("GET", "POST")))
+		WithDescription(updateTriggerDesc).WithTriggerConfig(NewHTTPTriggerConfig().WithAuthType("anonymous").
+			WithMethods("GET", "POST")))
 	assert.Nil(err)
-	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, "http", sourceArn, invocationRole)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, updateTriggerDesc, "http", sourceArn, invocationRole)
 	assert.Equal("anonymous", *updateTriggerOutput.TriggerConfig.(*HTTPTriggerConfig).AuthType)
 
 	listTriggersOutput, err := client.ListTriggers(NewListTriggersInput(serviceName, functionName))
@@ -372,9 +379,10 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	assert.Nil(errDelTrigger)
 }
 
-func (s *FcClientTestSuite) checkTriggerResponse(triggerResp *triggerMetadata, triggerName, triggerType, sourceArn, invocationRole string) {
+func (s *FcClientTestSuite) checkTriggerResponse(triggerResp *triggerMetadata, triggerName, description, triggerType, sourceArn, invocationRole string) {
 	assert := s.Require()
 	assert.Equal(*triggerResp.TriggerName, triggerName)
+	assert.Equal(*triggerResp.Description, description)
 	assert.Equal(*triggerResp.TriggerType, triggerType)
 	if triggerType != "http" {
 		assert.Equal(*triggerResp.SourceARN, sourceArn)
