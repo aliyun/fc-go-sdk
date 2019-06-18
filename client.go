@@ -449,6 +449,23 @@ func (c *Client) InvokeFunction(input *InvokeFunctionInput) (*InvokeFunctionOutp
 	return output, nil
 }
 
+// ListReservedCapacities returns list of reserved capacity from fc
+func (c *Client) ListReservedCapacities(input *ListReservedCapacitiesInput) (*ListReservedCapacitiesOutput, error) {
+	if input == nil {
+		input = new(ListReservedCapacitiesInput)
+	}
+
+	var output = new(ListReservedCapacitiesOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
 func (c *Client) sendRequest(input ServiceInput, httpMethod string) (*resty.Response, error) {
 	if err := input.Validate(); err != nil {
 		return nil, err
