@@ -17,6 +17,7 @@ type reservedCapacityMetadata struct {
 	Deadline         *string `json:"deadline"`
 	CreatedTime      *string `json:"createdTime"`
 	LastModifiedTime *string `json:"lastModifiedTime"`
+	IsRefunded       *string `json:"isRefunded"`
 }
 
 // ListReservedCapacitiesOutput : ...
