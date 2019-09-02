@@ -31,6 +31,8 @@ const (
 	printIndent = "  "
 
 	ifMatch = "If-Match"
+
+	tagQueryPrefix = "tag_"
 )
 
 type ServiceInput interface {
@@ -349,16 +351,17 @@ func (o GetServiceOutput) GetEtag() string {
 
 // serviceMetadata defines the detail service object
 type serviceMetadata struct {
-	ServiceName      *string    `json:"serviceName"`
-	Description      *string    `json:"description"`
-	Role             *string    `json:"role"`
-	LogConfig        *LogConfig `json:"logConfig"`
-	VPCConfig        *VPCConfig `json:"vpcConfig"`
-	InternetAccess   *bool      `json:"internetAccess"`
-	ServiceID        *string    `json:"serviceId"`
-	CreatedTime      *string    `json:"createdTime"`
-	LastModifiedTime *string    `json:"lastModifiedTime"`
-	NASConfig        *NASConfig `json:"nasConfig"`
+	ServiceName      *string           `json:"serviceName"`
+	Description      *string           `json:"description"`
+	Role             *string           `json:"role"`
+	LogConfig        *LogConfig        `json:"logConfig"`
+	VPCConfig        *VPCConfig        `json:"vpcConfig"`
+	InternetAccess   *bool             `json:"internetAccess"`
+	ServiceID        *string           `json:"serviceId"`
+	CreatedTime      *string           `json:"createdTime"`
+	LastModifiedTime *string           `json:"lastModifiedTime"`
+	NASConfig        *NASConfig        `json:"nasConfig"`
+	Tags             map[string]string `json:"tags"`
 }
 
 // ListServicesOutput defines listServiceMetadata result
@@ -407,6 +410,11 @@ func (i *ListServicesInput) WithLimit(limit int32) *ListServicesInput {
 	return i
 }
 
+func (i *ListServicesInput) WithTags(tags map[string]string) *ListServicesInput {
+	i.Tags = tags
+	return i
+}
+
 func (i *ListServicesInput) GetQueryParams() url.Values {
 	out := url.Values{}
 	if i.Prefix != nil {
@@ -423,6 +431,12 @@ func (i *ListServicesInput) GetQueryParams() url.Values {
 
 	if i.Limit != nil {
 		out.Set("limit", strconv.FormatInt(int64(*i.Limit), 10))
+	}
+
+	if i.Tags != nil {
+		for k, v := range i.Tags {
+			out.Set(tagQueryPrefix+k, v)
+		}
 	}
 
 	return out

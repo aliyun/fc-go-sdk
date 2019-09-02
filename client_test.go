@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -109,16 +110,102 @@ func (s *FcClientTestSuite) TestService() {
 	assert.Equal(len(listServicesOutput.Services), 1)
 	assert.Equal(*listServicesOutput.Services[0].ServiceName, serviceName)
 
+	serviceNameArr := []string{}
 	for a := 0; a < 10; a++ {
 		listServiceName := fmt.Sprintf("go-service-%s-%s", prefix, RandStringBytes(8))
 		_, errListService := client.CreateService(NewCreateServiceInput().
 			WithServiceName(listServiceName).
 			WithDescription("this is a service test for go sdk"))
 		assert.Nil(errListService)
+
+		tags := map[string]string{
+			"k3": "v3",
+		}
+		if a%2 == 0 {
+			tags["k1"] = "v1"
+		} else {
+			tags["k2"] = "v2"
+		}
+		resArn := fmt.Sprintf("services/%s", listServiceName)
+		resp, err := client.TagResource(NewTagResourceInput(resArn, tags))
+		assert.Nil(err)
+		assert.NotNil(resp)
+		assert.NotEmpty(resp.GetRequestID())
+		assert.Equal(resp.GetRequestID(), *resp.RequestID)
+
 		listServicesOutput, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix))
 		assert.Nil(err)
 		assert.Equal(len(listServicesOutput.Services), a+2)
+
+		serviceNameArr = append(serviceNameArr, listServiceName)
 	}
+	for i, svr := range serviceNameArr {
+		resArn := fmt.Sprintf("services/%s", svr)
+		resp, err := client.GetResourceTags(NewGetResourceTagsInput(resArn))
+		assert.Nil(err)
+		assert.NotNil(resp)
+		assert.NotEmpty(resp.GetRequestID())
+		assert.Equal(resp.GetRequestID(), *resp.RequestID)
+		assert.Equal(fmt.Sprintf("acs:fc:%s:%s:services/%s", region, accountID, svr), *resp.ResourceArn)
+		if i%2 == 0 {
+			assert.True(reflect.DeepEqual(map[string]string{
+				"k1": "v1",
+				"k3": "v3",
+			}, resp.Tags))
+
+		} else {
+			assert.True(reflect.DeepEqual(map[string]string{
+				"k2": "v2",
+				"k3": "v3",
+			}, resp.Tags))
+		}
+	}
+
+	listServicesOutput, err = client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix).WithTags(map[string]string{
+		"k3": "v3",
+	}))
+	assert.Nil(err)
+	assert.Equal(len(listServicesOutput.Services), 10)
+
+	listServicesOutput, err = client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix).WithTags(map[string]string{
+		"k1": "v1",
+	}))
+	assert.Nil(err)
+	assert.Equal(len(listServicesOutput.Services), 5)
+
+	listServicesOutput, err = client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix).WithTags(map[string]string{
+		"k1": "v1",
+		"k2": "v2",
+	}))
+	assert.Nil(err)
+	assert.Equal(len(listServicesOutput.Services), 0)
+
+	for _, svr := range serviceNameArr {
+		resArn := fmt.Sprintf("services/%s", svr)
+		client.UnTagResource(NewUnTagResourceInput(resArn).WithTagKeys([]string{"k3"}).WithAll(false))
+	}
+
+	listServicesOutput, err = client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix).WithTags(map[string]string{
+		"k3": "v3",
+	}))
+	assert.Nil(err)
+	assert.Equal(len(listServicesOutput.Services), 0)
+
+	for _, svr := range serviceNameArr {
+		resArn := fmt.Sprintf("services/%s", svr)
+		client.UnTagResource(NewUnTagResourceInput(resArn).WithTagKeys([]string{}).WithAll(true))
+	}
+	listServicesOutput, err = client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix).WithTags(map[string]string{
+		"k1": "v1",
+	}))
+	assert.Nil(err)
+	assert.Equal(len(listServicesOutput.Services), 0)
+
+	listServicesOutput, err = client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix).WithTags(map[string]string{
+		"k2": "v2",
+	}))
+	assert.Nil(err)
+	assert.Equal(len(listServicesOutput.Services), 0)
 
 	// DeleteService
 	_, errDelService := client.DeleteService(NewDeleteServiceInput(serviceName))
@@ -270,7 +357,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
 		WithDescription(description).WithInvocationRole(invocationRole).WithTriggerType("oss").
 		WithSourceARN(sourceArn).WithTriggerConfig(
-			NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix(prefix).WithFilterKeySuffix(suffix))
+		NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix(prefix).WithFilterKeySuffix(suffix))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
@@ -284,7 +371,7 @@ func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, function
 	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).WithDescription(updateTriggerDesc).
 		WithTriggerConfig(NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:*"})))
 	assert.Nil(err)
-	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, updateTriggerDesc,"oss", sourceArn, invocationRole)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, updateTriggerDesc, "oss", sourceArn, invocationRole)
 	assert.Equal([]string{"oss:ObjectCreated:*"}, updateTriggerOutput.TriggerConfig.(*OSSTriggerConfig).Events)
 
 	listTriggersOutput, err := client.ListTriggers(NewListTriggersInput(serviceName, functionName))
@@ -322,7 +409,7 @@ func (s *FcClientTestSuite) testLogTrigger(client *Client, serviceName, function
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
-	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, description,"log", sourceArn, invocationRole)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, description, "log", sourceArn, invocationRole)
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
@@ -353,11 +440,11 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
 		WithDescription(description).WithInvocationRole(invocationRole).WithTriggerType("http").
 		WithSourceARN(sourceArn).WithTriggerConfig(
-			NewHTTPTriggerConfig().WithAuthType("function").WithMethods("GET", "POST"))
+		NewHTTPTriggerConfig().WithAuthType("function").WithMethods("GET", "POST"))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	assert.Nil(err)
-	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, description,"http", sourceArn, invocationRole)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, triggerName, description, "http", sourceArn, invocationRole)
 
 	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, triggerName))
 	assert.Nil(err)
@@ -366,7 +453,7 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	updateTriggerDesc := "update http trigger"
 	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, triggerName).
 		WithDescription(updateTriggerDesc).WithTriggerConfig(NewHTTPTriggerConfig().WithAuthType("anonymous").
-			WithMethods("GET", "POST")))
+		WithMethods("GET", "POST")))
 	assert.Nil(err)
 	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, triggerName, updateTriggerDesc, "http", sourceArn, invocationRole)
 	assert.Equal("anonymous", *updateTriggerOutput.TriggerConfig.(*HTTPTriggerConfig).AuthType)
@@ -411,7 +498,9 @@ func (s *FcClientTestSuite) clearService(client *Client, serviceName string) {
 		_, errDelFunc := client.DeleteFunction(NewDeleteFunctionInput(serviceName, functionName))
 		assert.Nil(errDelFunc)
 	}
-	// DeleteService
+	// DeleteService and clear all tags
+	resArn := fmt.Sprintf("services/%s", serviceName)
+	client.UnTagResource(NewUnTagResourceInput(resArn).WithTagKeys([]string{}).WithAll(true))
 	_, errDelService := client.DeleteService(NewDeleteServiceInput(serviceName))
 	assert.Nil(errDelService)
 }
