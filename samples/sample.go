@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"net/http"
+
+	"github.com/aliyun/fc-go-sdk"
 )
 
 func main() {
@@ -77,23 +80,21 @@ func main() {
 	fmt.Println("Creating function1")
 	createFunctionInput1 := fc.NewCreateFunctionInput(serviceName).WithFunctionName("testf1").
 		WithDescription("testf1").
-		WithHandler("hello.index").WithRuntime("nodejs4.4").
-		WithCode(fc.NewCode().
-			WithOSSBucketName("fc-sdk-trigger-bucket-hangzhou").
-			WithOSSObjectName("hello_world_nodejs")).
+		WithHandler("hello.index").WithRuntime("nodejs6").
+		WithCode(fc.NewCode().WithFiles("hello_world.zip")).
 		WithTimeout(5)
 	createFunctionOutput, err := client.CreateFunction(createFunctionInput1)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
-		fmt.Printf("CreateFunction response: %s \n", createFunctionOutput)
+		fmt.Printf("CreateFunction response1: %s \n", createFunctionOutput)
 	}
 	fmt.Println("Creating function2")
 	createFunctionOutput2, err := client.CreateFunction(createFunctionInput1.WithFunctionName("testf2"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
-		fmt.Printf("CreateFunction response: %s \n", createFunctionOutput2)
+		fmt.Printf("CreateFunction response2: %s \n", createFunctionOutput2)
 	}
 
 	// CreateFunction with initializer
@@ -104,7 +105,7 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
-		fmt.Printf("CreateFunction response: %s \n", createFunctionOutput3)
+		fmt.Printf("CreateFunction response3: %s \n", createFunctionOutput3)
 	}
 
 	// ListFunctions
@@ -160,6 +161,8 @@ func main() {
 		fmt.Printf("PublishServiceVersion response: %s \n", publishServiceVersionOutput)
 	}
 
+	time.Sleep(time.Duration(1) * time.Second)
+
 	// PublishServiceVersion with IfMatch
 	fmt.Println("Publishing service version with IfMatch")
 	publishServiceVersionInput2 := fc.NewPublishServiceVersionInput(serviceName).
@@ -193,7 +196,7 @@ func main() {
 
 	// GetService with qualifier
 	fmt.Println("Getting service with qualifier")
-	getServiceOutput2, err := client.GetService(fc.NewGetServiceInput(serviceName).WithQualifier(publishServiceVersionOutput.VersionID))
+	getServiceOutput2, err := client.GetService(fc.NewGetServiceInput(serviceName).WithQualifier(*publishServiceVersionOutput.VersionID))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
@@ -203,7 +206,7 @@ func main() {
 	// CreateAlias
 	aliasName := "alias"
 	fmt.Println("Creating alias")
-	createAliasOutput, err := client.CreateAlias(fc.NewCreateAliasInput(serviceName).WithAliasName(aliasName).WithVersionID(publishServiceVersionOutput.VersionID))
+	createAliasOutput, err := client.CreateAlias(fc.NewCreateAliasInput(serviceName).WithAliasName(aliasName).WithVersionID(*publishServiceVersionOutput.VersionID))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
@@ -221,7 +224,7 @@ func main() {
 
 	// UpdateAlias
 	fmt.Println("Updating alias")
-	updateAliasOutput, err := client.UpdateAlias(fc.NewUpdateAliasInput(serviceName, aliasName).WithVersionID(publishServiceVersionOutput2.VersionID))
+	updateAliasOutput, err := client.UpdateAlias(fc.NewUpdateAliasInput(serviceName, aliasName).WithVersionID(*publishServiceVersionOutput.VersionID))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
@@ -237,6 +240,37 @@ func main() {
 		fmt.Printf("ListAliases response: %s \n", listAliasesOutput)
 	}
 
+	// PutProvisionConfig
+	fmt.Println("Putting provision config")
+	putProvisionConfigOutput, err := client.PutProvisionConfig(
+		fc.NewPutProvisionConfigInput(serviceName, aliasName, "testf1").
+			WithTarget(int64(10)))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	} else {
+		fmt.Printf("PutProvisionConfig response: %s \n", putProvisionConfigOutput)
+	}
+
+	// GetProvisionConfig
+	fmt.Println("Getting provision config")
+	getProvisionConfigOutput, err := client.GetProvisionConfig(
+		fc.NewGetProvisionConfigInput(serviceName, aliasName, "testf1"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	} else {
+		fmt.Printf("GetProvisionConfig response: %s \n", getProvisionConfigOutput)
+	}
+
+	// ListProvisionConfigs
+	fmt.Println("Listing provision configs")
+	listProvisionConfigsOutput, err := client.ListProvisionConfigs(
+		fc.NewListProvisionConfigsInput())
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	} else {
+		fmt.Printf("ListProvisionConfigs response: %s \n", listProvisionConfigsOutput)
+	}
+
 	// DeleteAlias
 	fmt.Println("Deleting aliases")
 	deleteAliasOutput, err := client.DeleteAlias(fc.NewDeleteAliasInput(serviceName, aliasName))
@@ -248,18 +282,15 @@ func main() {
 
 	// DeleteServiceVersion
 	fmt.Println("Deleting service version")
-	deleteServiceVersionOutput, err := client.DeleteServiceVersion(fc.NewDeleteServiceVersionInput(serviceName, publishServiceVersionOutput.VersionID))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	} else {
-		fmt.Printf("DeleteServiceVersion response: %s \n", deleteServiceVersionOutput)
-	}
+	vResp, _ := client.ListServiceVersions(fc.NewListServiceVersionsInput(serviceName))
+	for _, f := range vResp.Versions {
 
-	deleteServiceVersionOutput2, err := client.DeleteServiceVersion(fc.NewDeleteServiceVersionInput(serviceName, publishServiceVersionOutput2.VersionID))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	} else {
-		fmt.Printf("DeleteServiceVersion response: %s \n", deleteServiceVersionOutput2)
+		deleteServiceVersionOutput, err := client.DeleteServiceVersion(fc.NewDeleteServiceVersionInput(serviceName, *f.VersionID))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		} else {
+			fmt.Printf("DeleteServiceVersion response: %s \n", deleteServiceVersionOutput)
+		}
 	}
 
 	fmt.Println("Invoking function, log type None")
@@ -277,7 +308,7 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	} else {
-		fmt.Printf("ListFunctions response: %s \n", listFunctionsOutput)
+		// fmt.Printf("ListFunctions response: %s \n", listFunctionsOutput)
 		for _, fuc := range listFunctionsOutput.Functions {
 			fmt.Printf("Deleting function %s \n", *fuc.FunctionName)
 			if output, err := client.DeleteFunction(fc.NewDeleteFunctionInput(serviceName, *fuc.FunctionName)); err != nil {
@@ -285,7 +316,6 @@ func main() {
 			} else {
 				fmt.Printf("DeleteFunction response: %s \n", output)
 			}
-
 		}
 	}
 
