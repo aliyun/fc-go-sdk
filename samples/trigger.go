@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/aliyun/fc-go-sdk"
 )
 
 func main() {
@@ -19,7 +21,7 @@ func main() {
 	createTriggerInput := fc.NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
 		WithDescription("create trigger").WithInvocationRole("acs:ram:cn-hangzhou:123:role1").WithTriggerType("oss").
 		WithSourceARN("acs:oss:cn-hangzhou:123:fcbucket").WithTriggerConfig(
-			fc.NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix("r").WithFilterKeySuffix("s"))
+		fc.NewOSSTriggerConfig().WithEvents([]string{"oss:ObjectCreated:PostObject"}).WithFilterKeyPrefix("r").WithFilterKeySuffix("s"))
 
 	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
 	if err != nil {

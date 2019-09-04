@@ -479,6 +479,57 @@ func (c *Client) UnTagResource(input *UnTagResourceInput) (*UnTagResourceOut, er
 	return output, nil
 }
 
+// PutProvisionConfig put provision config
+func (c *Client) PutProvisionConfig(input *PutProvisionConfigInput) (*PutProvisionConfigOutput, error) {
+	if input == nil {
+		input = new(PutProvisionConfigInput)
+	}
+
+	var output = new(PutProvisionConfigOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodPut)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
+// GetProvisionConfig return provision config from fc
+func (c *Client) GetProvisionConfig(input *GetProvisionConfigInput) (*GetProvisionConfigOutput, error) {
+	if input == nil {
+		input = new(GetProvisionConfigInput)
+	}
+
+	var output = new(GetProvisionConfigOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
+// ListProvisionConfigs return list of provision configs from fc
+func (c *Client) ListProvisionConfigs(input *ListProvisionConfigsInput) (*ListProvisionConfigsOutput, error) {
+	if input == nil {
+		input = new(ListProvisionConfigsInput)
+	}
+
+	var output = new(ListProvisionConfigsOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
 // InvokeFunction : invoke function in fc
 func (c *Client) InvokeFunction(input *InvokeFunctionInput) (*InvokeFunctionOutput, error) {
 	if input == nil {
