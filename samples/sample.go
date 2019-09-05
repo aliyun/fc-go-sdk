@@ -271,6 +271,17 @@ func main() {
 		fmt.Printf("ListProvisionConfigs response: %s \n", listProvisionConfigsOutput)
 	}
 
+	// PutProvisionConfig 0, Delete provision config
+	fmt.Println("Delete provision config")
+	putProvisionConfigOutput, err = client.PutProvisionConfig(
+		fc.NewPutProvisionConfigInput(serviceName, aliasName, "testf1").
+			WithTarget(int64(0)))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	} else {
+		fmt.Printf("PutProvisionConfig response: %s \n", putProvisionConfigOutput)
+	}
+
 	// DeleteAlias
 	fmt.Println("Deleting aliases")
 	deleteAliasOutput, err := client.DeleteAlias(fc.NewDeleteAliasInput(serviceName, aliasName))
