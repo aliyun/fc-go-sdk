@@ -22,6 +22,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"github.com/aliyun/fc-go-sdk"
 )
 
 func main() {

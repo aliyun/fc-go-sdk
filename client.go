@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+	"bytes"
 
 	"gopkg.in/resty.v1"
 )
@@ -314,7 +315,9 @@ func (c *Client) GetFunctionCode(input *GetFunctionCodeInput) (*GetFunctionCodeO
 		return nil, err
 	}
 	output.Header = httpResponse.Header()
-	json.Unmarshal(httpResponse.Body(), output)
+	data := httpResponse.Body()
+	data = bytes.Replace(data, []byte("\\u0026"), []byte("&"), -1)
+	json.Unmarshal(data, output)
 	return output, nil
 }
 
