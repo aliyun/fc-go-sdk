@@ -131,7 +131,6 @@ func (s *FcClientTestSuite) TestService() {
 		assert.Nil(err)
 		assert.NotNil(resp)
 		assert.NotEmpty(resp.GetRequestID())
-		assert.Equal(resp.GetRequestID(), *resp.RequestID)
 
 		listServicesOutput, err := client.ListServices(NewListServicesInput().WithLimit(100).WithPrefix(serviceNamePrefix))
 		assert.Nil(err)
@@ -145,7 +144,6 @@ func (s *FcClientTestSuite) TestService() {
 		assert.Nil(err)
 		assert.NotNil(resp)
 		assert.NotEmpty(resp.GetRequestID())
-		assert.Equal(resp.GetRequestID(), *resp.RequestID)
 		assert.Equal(fmt.Sprintf("acs:fc:%s:%s:services/%s", region, accountID, svr), *resp.ResourceArn)
 		if i%2 == 0 {
 			assert.True(reflect.DeepEqual(map[string]string{

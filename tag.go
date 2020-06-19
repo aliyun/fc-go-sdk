@@ -63,8 +63,7 @@ func (t *TagResourceInput) Validate() error {
 
 // TagResourceOut ...
 type TagResourceOut struct {
-	Header    http.Header
-	RequestID *string `json:"requestId"`
+	Header http.Header
 }
 
 func (o TagResourceOut) String() string {
@@ -124,7 +123,6 @@ func (t *GetResourceTagsInput) Validate() error {
 // GetResourceTagsOut ...
 type GetResourceTagsOut struct {
 	Header      http.Header
-	RequestID   *string           `json:"requestId"`
 	ResourceArn *string           `json:"resourceArn"`
 	Tags        map[string]string `json:"tags"`
 }
@@ -209,8 +207,7 @@ func (t *UnTagResourceInput) Validate() error {
 
 // UnTagResourceOut ...
 type UnTagResourceOut struct {
-	Header    http.Header
-	RequestID *string `json:"requestId"`
+	Header http.Header
 }
 
 func (o UnTagResourceOut) String() string {
