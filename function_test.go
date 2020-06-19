@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+func getStringPointer(str string) *string {
+	return &str
+}
+
 type FunctionStructsTestSuite struct {
 	suite.Suite
 }
@@ -60,6 +64,106 @@ func (s *FunctionStructsTestSuite) TestEnvironmentVariables() {
 
 	output := &GetFunctionOutput{}
 	assert.Nil(output.EnvironmentVariables)
+}
+
+func (s *FunctionStructsTestSuite) TestInstanceConcurrency() {
+	assert := s.Require()
+
+	{
+		input := NewCreateFunctionInput("service")
+		assert.Equal("service", *input.ServiceName)
+		assert.Nil(input.InstanceConcurrency)
+
+		input.WithInstanceConcurrency(int32(0))
+		assert.NotNil(input.InstanceConcurrency)
+		assert.Equal(int32(0), *input.InstanceConcurrency)
+
+		input.WithInstanceConcurrency(int32(1))
+		assert.NotNil(input.InstanceConcurrency)
+		assert.Equal(int32(1), *input.InstanceConcurrency)
+	}
+	{
+		input := NewUpdateFunctionInput("service", "func")
+		assert.Equal("service", *input.ServiceName)
+		assert.Equal("func", *input.FunctionName)
+		assert.Nil(input.InstanceConcurrency)
+
+		input.WithInstanceConcurrency(int32(0))
+		assert.NotNil(input.InstanceConcurrency)
+		assert.Equal(int32(0), *input.InstanceConcurrency)
+
+		input.WithInstanceConcurrency(int32(1))
+		assert.NotNil(input.InstanceConcurrency)
+		assert.Equal(int32(1), *input.InstanceConcurrency)
+	}
+
+	output := &GetFunctionOutput{}
+	assert.Nil(output.InstanceConcurrency)
+}
+
+func (s *FunctionStructsTestSuite) TestCustomContainerArgs() {
+	assert := s.Require()
+
+	{
+		input := NewCreateFunctionInput("service")
+		assert.Equal("service", *input.ServiceName)
+		assert.Nil(input.CustomContainerConfig)
+		assert.Nil(input.CAPort)
+
+		input.WithCustomContainerConfig(&CustomContainerConfig{})
+		assert.NotNil(input.CustomContainerConfig)
+		assert.Nil(input.CustomContainerConfig.Image)
+		assert.Nil(input.CustomContainerConfig.Command)
+		assert.Nil(input.CustomContainerConfig.Args)
+
+		port := int32(9000)
+		input.WithCAPort(port)
+		assert.NotNil(input.CAPort)
+		assert.Equal(int32(9000), *input.CAPort)
+
+		input.WithCustomContainerConfig(&CustomContainerConfig{
+			Image:   getStringPointer("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox"),
+			Command: getStringPointer(`["python", "server.py"]`),
+			Args:    getStringPointer(`["9000"]`),
+		})
+		assert.NotNil(input.CustomContainerConfig)
+		assert.Equal("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox", *input.CustomContainerConfig.Image)
+		assert.Equal(`["python", "server.py"]`, *input.CustomContainerConfig.Command)
+		assert.Equal(`["9000"]`, *input.CustomContainerConfig.Args)
+	}
+
+	{
+		input := NewUpdateFunctionInput("service", "func")
+		assert.Equal("service", *input.ServiceName)
+		assert.Equal("func", *input.FunctionName)
+		assert.Nil(input.CustomContainerConfig)
+		assert.Nil(input.CAPort)
+
+		input.WithCustomContainerConfig(&CustomContainerConfig{})
+		assert.NotNil(input.CustomContainerConfig)
+		assert.Nil(input.CustomContainerConfig.Image)
+		assert.Nil(input.CustomContainerConfig.Command)
+		assert.Nil(input.CustomContainerConfig.Args)
+
+		port := int32(9000)
+		input.WithCAPort(port)
+		assert.NotNil(input.CAPort)
+		assert.Equal(int32(9000), *input.CAPort)
+
+		input.WithCustomContainerConfig(&CustomContainerConfig{
+			Image:   getStringPointer("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox"),
+			Command: getStringPointer(`["python", "server.py"]`),
+			Args:    getStringPointer(`["9000"]`),
+		})
+		assert.NotNil(input.CustomContainerConfig)
+		assert.Equal("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox", *input.CustomContainerConfig.Image)
+		assert.Equal(`["python", "server.py"]`, *input.CustomContainerConfig.Command)
+		assert.Equal(`["9000"]`, *input.CustomContainerConfig.Args)
+	}
+
+	output := &GetFunctionOutput{}
+	assert.Nil(output.CustomContainerConfig)
+	assert.Nil(output.CAPort)
 }
 
 func TestFunctionStructs(t *testing.T) {

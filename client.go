@@ -564,6 +564,86 @@ func (c *Client) ListReservedCapacities(input *ListReservedCapacitiesInput) (*Li
 	return output, nil
 }
 
+// CreateCustomDomain creates custom domain
+func (c *Client) CreateCustomDomain(input *CreateCustomDomainInput) (*CreateCustomDomainOutput, error) {
+	if input == nil {
+		input = new(CreateCustomDomainInput)
+	}
+
+	var output = new(CreateCustomDomainOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodPost)
+	if err != nil {
+		return nil, err
+	}
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
+// UpdateCustomDomain updates custom domain
+func (c *Client) UpdateCustomDomain(input *UpdateCustomDomainInput) (*UpdateCustomDomainOutput, error) {
+	if input == nil {
+		input = new(UpdateCustomDomainInput)
+	}
+
+	var output = new(UpdateCustomDomainOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodPut)
+	if err != nil {
+		return nil, err
+	}
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
+// GetCustomDomain returns custom domain metadata from fc
+func (c *Client) GetCustomDomain(input *GetCustomDomainInput) (*GetCustomDomainOutput, error) {
+	if input == nil {
+		input = new(GetCustomDomainInput)
+	}
+
+	var output = new(GetCustomDomainOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
+// DeleteCustomDomain deletes custom domain
+func (c *Client) DeleteCustomDomain(input *DeleteCustomDomainInput) (*DeleteCustomDomainOutput, error) {
+	if input == nil {
+		input = new(DeleteCustomDomainInput)
+	}
+	var output = new(DeleteCustomDomainOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodDelete)
+	if err != nil {
+		return nil, err
+	}
+	output.Header = httpResponse.Header()
+	return output, nil
+}
+
+// ListCustomDomains returns list of custom domains from fc
+func (c *Client) ListCustomDomains(input *ListCustomDomainsInput) (*ListCustomDomainsOutput, error) {
+	if input == nil {
+		input = new(ListCustomDomainsInput)
+	}
+
+	var output = new(ListCustomDomainsOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
 func (c *Client) sendRequest(input ServiceInput, httpMethod string) (*resty.Response, error) {
 	if err := input.Validate(); err != nil {
 		return nil, err
