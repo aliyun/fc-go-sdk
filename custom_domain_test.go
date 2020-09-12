@@ -1,8 +1,9 @@
 package fc
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 func TestCustomDomainStructs(t *testing.T) {
@@ -27,6 +28,26 @@ func (s *CustomDomainStructsTestSuite) TestCreateCustomDomain() {
 	assert.NotNil(input.Protocol)
 	assert.Equal("HTTP", *input.Protocol)
 
+	input.WithProtocol("HTTPS")
+	assert.NotNil(input.Protocol)
+	assert.Equal("HTTPS", *input.Protocol)
+
+	input.WithProtocol("HTTP,HTTPS")
+	assert.NotNil(input.Protocol)
+	assert.Equal("HTTP,HTTPS", *input.Protocol)
+
+	cert := CertConfig{}
+	cert.WithCertName("cert-name")
+	cert.WithPrivateKey("server-privateKey")
+	cert.WithCertificate("server-certificate")
+	assert.Equal("server-privateKey", *cert.PrivateKey)
+	assert.Equal("server-certificate", *cert.Certificate)
+
+	input.WithCertConfig(&cert)
+	assert.Equal("cert-name", *input.CertConfig.CertName)
+	assert.Equal("server-privateKey", *input.CertConfig.PrivateKey)
+	assert.Equal("server-certificate", *input.CertConfig.Certificate)
+
 	input.WithRouteConfig(&RouteConfig{})
 	assert.NotNil(input.RouteConfig)
 
@@ -48,6 +69,10 @@ func (s *CustomDomainStructsTestSuite) TestCreateCustomDomain() {
 	pathConfig.WithQualifier("v1")
 	assert.NotNil(pathConfig.Qualifier)
 	assert.Equal("v1", *pathConfig.Qualifier)
+
+	pathConfig.WithMethods([]string{"GET", "POST"})
+	assert.NotNil(pathConfig.Methods)
+	assert.Equal([]string{"GET", "POST"}, pathConfig.Methods)
 
 	routeConfig := NewRouteConfig()
 	assert.NotNil(routeConfig)
@@ -69,6 +94,27 @@ func (s *CustomDomainStructsTestSuite) TestUpdateCustomDomain() {
 	assert.NotNil(input.Protocol)
 	assert.Equal("HTTP", *input.Protocol)
 
+	input.WithProtocol("HTTPS")
+	assert.NotNil(input.Protocol)
+	assert.Equal("HTTPS", *input.Protocol)
+
+	input.WithProtocol("HTTP,HTTPS")
+	assert.NotNil(input.Protocol)
+	assert.Equal("HTTP,HTTPS", *input.Protocol)
+
+	cert := CertConfig{}
+	cert.WithCertName("cert-name")
+	cert.WithPrivateKey("server-privateKey")
+	cert.WithCertificate("server-certificate")
+	assert.Equal("cert-name", *cert.CertName)
+	assert.Equal("server-privateKey", *cert.PrivateKey)
+	assert.Equal("server-certificate", *cert.Certificate)
+
+	input.WithCertConfig(&cert)
+	assert.Equal("cert-name", *cert.CertName)
+	assert.Equal("server-privateKey", *input.CertConfig.PrivateKey)
+	assert.Equal("server-certificate", *input.CertConfig.Certificate)
+
 	input.WithRouteConfig(&RouteConfig{})
 	assert.NotNil(input.RouteConfig)
 
@@ -90,6 +136,10 @@ func (s *CustomDomainStructsTestSuite) TestUpdateCustomDomain() {
 	pathConfig.WithQualifier("v1")
 	assert.NotNil(pathConfig.Qualifier)
 	assert.Equal("v1", *pathConfig.Qualifier)
+
+	pathConfig.WithMethods([]string{"GET", "POST"})
+	assert.NotNil(pathConfig.Methods)
+	assert.Equal([]string{"GET", "POST"}, pathConfig.Methods)
 
 	routeConfig := NewRouteConfig()
 	assert.NotNil(routeConfig)
