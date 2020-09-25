@@ -698,8 +698,8 @@ func (c *Client) sendRequest(input ServiceInput, httpMethod string) (*resty.Resp
 	return resp, nil
 }
 
-// GetFunctionAsyncConfig returns async config from fc
-func (c *Client) GetFunctionAsyncConfig(input *GetFunctionAsyncInvokeConfigInput) (*GetFunctionAsyncInvokeConfigOutput, error) {
+// GetFunctionAsyncInvokeConfig returns async config from fc
+func (c *Client) GetFunctionAsyncInvokeConfig(input *GetFunctionAsyncInvokeConfigInput) (*GetFunctionAsyncInvokeConfigOutput, error) {
 	if input == nil {
 		input = new(GetFunctionAsyncInvokeConfigInput)
 	}
