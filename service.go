@@ -73,6 +73,7 @@ type VPCConfig struct {
 	VPCID           *string  `json:"vpcId"`
 	VSwitchIDs      []string `json:"vSwitchIds"`
 	SecurityGroupID *string  `json:"securityGroupId"`
+	Role            string   `json:"role"`
 }
 
 func NewVPCConfig() *VPCConfig {
