@@ -29,9 +29,9 @@ const (
 	functionCodeWithQualifierPath    = singleFunctionWithQualifierPath + "/code"
 	invokeFunctionWithQualifierPath  = singleFunctionWithQualifierPath + "/invocations"
 	provisionConfigWithQualifierPath = singleFunctionWithQualifierPath + "/provision-config"
-	asyncConfigPath = singleFunctionPath + "/async-invoke-config"
-	asyncConfigWithQualifierPath = singleFunctionWithQualifierPath + "/async-invoke-config"
-	listAsyncConfigsPath = singleFunctionPath + "/async-invoke-configs"
+	asyncConfigPath                  = singleFunctionPath + "/async-invoke-config"
+	asyncConfigWithQualifierPath     = singleFunctionWithQualifierPath + "/async-invoke-config"
+	listAsyncConfigsPath             = singleFunctionPath + "/async-invoke-configs"
 
 	printIndent = "  "
 
@@ -134,15 +134,55 @@ func (n *NASConfig) WithMountPoints(mountPoints []NASMountConfig) *NASConfig {
 	return n
 }
 
+type TracingConfig struct {
+	Type   *string     `json:"type"`
+	Params interface{} `json:"params"`
+}
+
+func NewTracingConfig() *TracingConfig {
+	return &TracingConfig{}
+}
+
+func (t *TracingConfig) WithType(tracingType string) *TracingConfig {
+	t.Type = &tracingType
+	return t
+}
+
+func (t *TracingConfig) WithParams(params interface{}) *TracingConfig {
+	t.Params = params
+	return t
+}
+
+func (t *TracingConfig) WithJaegerConfig(config *JaegerConfig) *TracingConfig {
+	jaegerType := TracingTypeJaeger
+	t.Type = &jaegerType
+	t.Params = config
+	return t
+}
+
+type JaegerConfig struct {
+	Endpoint *string `json:"endpoint"`
+}
+
+func NewJaegerConfig() *JaegerConfig {
+	return &JaegerConfig{}
+}
+
+func (j *JaegerConfig) WithEndpoint(endpoint string) *JaegerConfig {
+	j.Endpoint = &endpoint
+	return j
+}
+
 // CreateServiceInput defines input to create service
 type CreateServiceInput struct {
-	ServiceName    *string    `json:"serviceName"`
-	Description    *string    `json:"description"`
-	Role           *string    `json:"role"`
-	LogConfig      *LogConfig `json:"logConfig"`
-	VPCConfig      *VPCConfig `json:"vpcConfig"`
-	InternetAccess *bool      `json:"internetAccess"`
-	NASConfig      *NASConfig `json:"nasConfig"`
+	ServiceName    *string        `json:"serviceName"`
+	Description    *string        `json:"description"`
+	Role           *string        `json:"role"`
+	LogConfig      *LogConfig     `json:"logConfig"`
+	VPCConfig      *VPCConfig     `json:"vpcConfig"`
+	InternetAccess *bool          `json:"internetAccess"`
+	NASConfig      *NASConfig     `json:"nasConfig"`
+	TracingConfig  *TracingConfig `json:tracingConfig`
 }
 
 func NewCreateServiceInput() *CreateServiceInput {
@@ -176,6 +216,11 @@ func (s *CreateServiceInput) WithVPCConfig(vpcConfig *VPCConfig) *CreateServiceI
 
 func (s *CreateServiceInput) WithNASConfig(nasConfig *NASConfig) *CreateServiceInput {
 	s.NASConfig = nasConfig
+	return s
+}
+
+func (s *CreateServiceInput) WithTracingConfig(tracingConfig *TracingConfig) *CreateServiceInput {
+	s.TracingConfig = tracingConfig
 	return s
 }
 
@@ -229,12 +274,13 @@ func (o CreateServiceOutput) GetEtag() string {
 
 // ServiceUpdateObject defines the service update fields
 type ServiceUpdateObject struct {
-	Description    *string    `json:"description"`
-	Role           *string    `json:"role"`
-	LogConfig      *LogConfig `json:"logConfig"`
-	VPCConfig      *VPCConfig `json:"vpcConfig"`
-	InternetAccess *bool      `json:"internetAccess"`
-	NASConfig      *NASConfig `json:"nasConfig"`
+	Description    *string        `json:"description"`
+	Role           *string        `json:"role"`
+	LogConfig      *LogConfig     `json:"logConfig"`
+	VPCConfig      *VPCConfig     `json:"vpcConfig"`
+	InternetAccess *bool          `json:"internetAccess"`
+	NASConfig      *NASConfig     `json:"nasConfig"`
+	TracingConfig  *TracingConfig `json:tracingConfig`
 }
 
 type UpdateServiceInput struct {
@@ -269,6 +315,11 @@ func (s *UpdateServiceInput) WithVPCConfig(vpcConfig *VPCConfig) *UpdateServiceI
 
 func (s *UpdateServiceInput) WithNASConfig(nasConfig *NASConfig) *UpdateServiceInput {
 	s.NASConfig = nasConfig
+	return s
+}
+
+func (s *UpdateServiceInput) WithTracingConfig(tracingConfig *TracingConfig) *UpdateServiceInput {
+	s.TracingConfig = tracingConfig
 	return s
 }
 
