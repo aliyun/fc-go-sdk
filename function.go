@@ -78,9 +78,10 @@ func (c *Code) WithFiles(files ...string) *Code {
 
 // CustomContainerConfig defines the code docker image
 type CustomContainerConfig struct {
-	Image   *string `json:"image"`
-	Command *string `json:"command"`
-	Args    *string `json:"args"`
+	Image            *string `json:"image"`
+	Command          *string `json:"command"`
+	Args             *string `json:"args"`
+	AccelerationType *string `json:"accelerationType"`
 }
 
 func NewCustomContainerConfig() *CustomContainerConfig {
@@ -99,6 +100,11 @@ func (c *CustomContainerConfig) WithCommand(cmd string) *CustomContainerConfig {
 
 func (c *CustomContainerConfig) WithArgs(args string) *CustomContainerConfig {
 	c.Args = &args
+	return c
+}
+
+func (c *CustomContainerConfig) WithAccelerationType(accelerationType string) *CustomContainerConfig {
+	c.AccelerationType = &accelerationType
 	return c
 }
 

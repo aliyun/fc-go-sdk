@@ -61,6 +61,12 @@ const (
 
 	//HTTPHeaderDate :Key in request headers
 	HTTPHeaderDate = "Date"
+
+	// CustomContainerConfigAccelerationTypeDefault : default acceleration type for custom-container runtime
+	CustomContainerConfigAccelerationTypeDefault = "Default"
+
+	// CustomContainerConfigAccelerationTypeNone : disable custom-container runtime acceleration
+	CustomContainerConfigAccelerationTypeNone = "None"
 )
 
 // Supported api versions
