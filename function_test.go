@@ -122,14 +122,16 @@ func (s *FunctionStructsTestSuite) TestCustomContainerArgs() {
 		assert.Equal(int32(9000), *input.CAPort)
 
 		input.WithCustomContainerConfig(&CustomContainerConfig{
-			Image:   getStringPointer("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox"),
-			Command: getStringPointer(`["python", "server.py"]`),
-			Args:    getStringPointer(`["9000"]`),
+			Image:            getStringPointer("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox"),
+			Command:          getStringPointer(`["python", "server.py"]`),
+			Args:             getStringPointer(`["9000"]`),
+			AccelerationType: getStringPointer(CustomContainerConfigAccelerationTypeNone),
 		})
 		assert.NotNil(input.CustomContainerConfig)
 		assert.Equal("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox", *input.CustomContainerConfig.Image)
 		assert.Equal(`["python", "server.py"]`, *input.CustomContainerConfig.Command)
 		assert.Equal(`["9000"]`, *input.CustomContainerConfig.Args)
+		assert.Equal("None", *input.CustomContainerConfig.AccelerationType)
 	}
 
 	{
@@ -151,19 +153,28 @@ func (s *FunctionStructsTestSuite) TestCustomContainerArgs() {
 		assert.Equal(int32(9000), *input.CAPort)
 
 		input.WithCustomContainerConfig(&CustomContainerConfig{
-			Image:   getStringPointer("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox"),
-			Command: getStringPointer(`["python", "server.py"]`),
-			Args:    getStringPointer(`["9000"]`),
+			Image:            getStringPointer("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox"),
+			Command:          getStringPointer(`["python", "server.py"]`),
+			Args:             getStringPointer(`["9000"]`),
+			AccelerationType: getStringPointer("Default"),
 		})
 		assert.NotNil(input.CustomContainerConfig)
 		assert.Equal("registry.cn-hangzhou.aliyuncs.com/fc-test/busybox", *input.CustomContainerConfig.Image)
 		assert.Equal(`["python", "server.py"]`, *input.CustomContainerConfig.Command)
 		assert.Equal(`["9000"]`, *input.CustomContainerConfig.Args)
+		assert.Equal(CustomContainerConfigAccelerationTypeDefault, *input.CustomContainerConfig.AccelerationType)
 	}
 
 	output := &GetFunctionOutput{}
 	assert.Nil(output.CustomContainerConfig)
 	assert.Nil(output.CAPort)
+
+	ccc := &CustomContainerConfig{}
+	assert.Nil(ccc.AccelerationType)
+	ccc.WithAccelerationType("Default")
+	assert.Equal("Default", *ccc.AccelerationType)
+	ccc.WithAccelerationType("None")
+	assert.Equal("None", *ccc.AccelerationType)
 }
 
 func TestFunctionStructs(t *testing.T) {
