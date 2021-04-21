@@ -73,3 +73,8 @@ const (
 const (
 	APIVersionV1 = "2016-08-15"
 )
+
+// Supported tracing types
+const (
+	TracingTypeJaeger = "Jaeger"
+)
