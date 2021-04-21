@@ -129,6 +129,7 @@ type FunctionCreateObject struct {
 	CustomContainerConfig *CustomContainerConfig `json:"customContainerConfig"`
 	CAPort                *int32                 `json:"caPort"`
 	InstanceType          *string                `json:"instanceType"`
+	Layers                []string               `json:"layers"`
 
 	err error `json:"-"`
 }
@@ -199,6 +200,13 @@ func (i *CreateFunctionInput) WithInitializationTimeout(initializationTimeout in
 func (i *CreateFunctionInput) WithCustomContainerConfig(customContainerConfig *CustomContainerConfig) *CreateFunctionInput {
 	if customContainerConfig != nil {
 		i.CustomContainerConfig = customContainerConfig
+	}
+	return i
+}
+
+func (i *CreateFunctionInput) WithLayers(layers []string) *CreateFunctionInput {
+	if layers != nil {
+		i.Layers = layers
 	}
 	return i
 }
@@ -276,6 +284,7 @@ type FunctionUpdateObject struct {
 	CustomContainerConfig *CustomContainerConfig `json:"customContainerConfig"`
 	CAPort                *int32                 `json:"caPort"`
 	InstanceType          *string                `json:"instanceType"`
+	Layers                []string               `json:"layers"`
 
 	err error `json:"-"`
 }
@@ -356,6 +365,13 @@ func (i *UpdateFunctionInput) WithInitializationTimeout(initializationTimeout in
 func (i *UpdateFunctionInput) WithCustomContainerConfig(customContainerConfig *CustomContainerConfig) *UpdateFunctionInput {
 	if customContainerConfig != nil {
 		i.CustomContainerConfig = customContainerConfig
+	}
+	return i
+}
+
+func (i *UpdateFunctionInput) WithLayers(layers []string) *UpdateFunctionInput {
+	if layers != nil {
+		i.Layers = layers
 	}
 	return i
 }
@@ -516,6 +532,7 @@ type functionMetadata struct {
 	CreatedTime           *string                `json:"createdTime"`
 	LastModifiedTime      *string                `json:"lastModifiedTime"`
 	InstanceType          *string                `json:"instanceType"`
+	Layers                []string               `json:"layers"`
 }
 
 // GetFunctionCodeInput ...
