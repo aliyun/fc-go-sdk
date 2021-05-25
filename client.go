@@ -780,12 +780,12 @@ func (c *Client) ListLayers(input *ListLayersInput) (*ListLayersOutput, error) {
 }
 
 // ListLayerVersions returns list of layer versions of a specific layer from fc
-func (c *Client) ListLayerVersions(input *ListLayerVersionsInput) (*ListLayersOutput, error) {
+func (c *Client) ListLayerVersions(input *ListLayerVersionsInput) (*ListLayerVersionsOutput, error) {
 	if input == nil {
 		input = new(ListLayerVersionsInput)
 	}
 
-	var output = new(ListLayersOutput)
+	var output = new(ListLayerVersionsOutput)
 	httpResponse, err := c.sendRequest(input, http.MethodGet)
 	if err != nil {
 		return nil, err

@@ -400,6 +400,24 @@ func (i *ListLayerVersionsInput) Validate() error {
 	return nil
 }
 
+type ListLayerVersionsOutput struct {
+	Header      http.Header
+	Layers      []*Layer `json:"layers"`
+	NextVersion *int32   `json:"nextVersion,omitempty"`
+}
+
+func (o ListLayerVersionsOutput) String() string {
+	b, err := json.MarshalIndent(o, "", printIndent)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (o ListLayerVersionsOutput) GetRequestID() string {
+	return GetRequestID(o.Header)
+}
+
 type PermanentDeleteLayerVersionInput struct {
 	LayerName        string
 	Version          int32
