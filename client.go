@@ -891,3 +891,53 @@ func (c *Client) DeleteLayerVersion(input *DeleteLayerVersionInput) (*DeleteLaye
 	output.Header = httpResponse.Header()
 	return output, nil
 }
+
+// GetStatefulAsyncInvocation returns stateful async invocation record
+func (c *Client) GetStatefulAsyncInvocation(input *GetStatefulAsyncInvocationInput) (*GetStatefulAsyncInvocationOutput, error) {
+	if input == nil {
+		input = new(GetStatefulAsyncInvocationInput)
+	}
+
+	var output = new(GetStatefulAsyncInvocationOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
+// ListStatefulAsyncInvocations returns list of stateful async invocation records
+func (c *Client) ListStatefulAsyncInvocations(input *ListStatefulAsyncInvocationsInput) (*ListStatefulAsyncInvocationsOutput, error) {
+	if input == nil {
+		input = new(ListStatefulAsyncInvocationsInput)
+	}
+
+	var output = new(ListStatefulAsyncInvocationsOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
+
+// StopStatefulAsyncInvocation ...
+func (c *Client) StopStatefulAsyncInvocation(input *StopStatefulAsyncInvocationInput) (*StopStatefulAsyncInvocationOutput, error) {
+	if input == nil {
+		input = new(StopStatefulAsyncInvocationInput)
+	}
+
+	var output = new(StopStatefulAsyncInvocationOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodPut)
+	if err != nil {
+		return nil, err
+	}
+	output.Header = httpResponse.Header()
+	json.Unmarshal(httpResponse.Body(), output)
+	return output, nil
+}
