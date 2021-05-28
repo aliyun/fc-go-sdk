@@ -771,6 +771,11 @@ func (i *InvokeFunctionInput) WithPayload(payload []byte) *InvokeFunctionInput {
 	i.Payload = &payload
 	return i
 }
+func (i *InvokeFunctionInput) WithStatefulAsyncInvocationID(id string) *InvokeFunctionInput {
+	i.WithInvocationType(invocationTypeAsync)
+	i.headers[HTTPHeaderStatefulAsyncInvocationID] = id
+	return i
+}
 
 func (i *InvokeFunctionInput) WithInvocationType(invocationType string) *InvokeFunctionInput {
 	i.headers[HTTPHeaderInvocationType] = invocationType

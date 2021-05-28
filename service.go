@@ -35,6 +35,11 @@ const (
 	asyncConfigWithQualifierPath     = singleFunctionWithQualifierPath + "/async-invoke-config"
 	listAsyncConfigsPath             = singleFunctionPath + "/async-invoke-configs"
 
+	statefulAsyncInvocationPath                   = singleFunctionPath + "/stateful-async-invocations/%s"
+	statefulAsyncInvocationWithQualifierPath      = singleFunctionWithQualifierPath + "/stateful-async-invocations/%s"
+	listStatefulAsyncInvocationsPath              = singleFunctionPath + "/stateful-async-invocations"
+	listStatefulAsyncInvocationsWithQualifierPath = singleFunctionWithQualifierPath + "/stateful-async-invocations"
+
 	printIndent = "  "
 
 	ifMatch = "If-Match"

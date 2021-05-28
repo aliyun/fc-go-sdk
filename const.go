@@ -29,6 +29,9 @@ const (
 	// HTTPHeaderInvocationType stores the invocation type.
 	HTTPHeaderInvocationType = "X-Fc-Invocation-Type"
 
+	// HTTPHeaderStatefulAsyncInvocationID get invocation ID
+	HTTPHeaderStatefulAsyncInvocationID = "X-Fc-Stateful-Async-Invocation-Id"
+
 	// HTTPHeaderAccountID stores the account ID
 	HTTPHeaderAccountID = "X-Fc-Account-Id"
 
