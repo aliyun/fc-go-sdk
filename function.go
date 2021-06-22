@@ -82,6 +82,7 @@ type CustomContainerConfig struct {
 	Command          *string `json:"command"`
 	Args             *string `json:"args"`
 	AccelerationType *string `json:"accelerationType"`
+	InstanceID       *string `json:"instanceID"`
 }
 
 func NewCustomContainerConfig() *CustomContainerConfig {
@@ -105,6 +106,11 @@ func (c *CustomContainerConfig) WithArgs(args string) *CustomContainerConfig {
 
 func (c *CustomContainerConfig) WithAccelerationType(accelerationType string) *CustomContainerConfig {
 	c.AccelerationType = &accelerationType
+	return c
+}
+
+func (c *CustomContainerConfig) WithInstanceID(instanceID string) *CustomContainerConfig {
+	c.InstanceID = &instanceID
 	return c
 }
 
