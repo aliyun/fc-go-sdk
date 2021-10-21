@@ -1,7 +1,9 @@
 package fc
 
 import (
+	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -940,4 +942,41 @@ func (c *Client) StopStatefulAsyncInvocation(input *StopStatefulAsyncInvocationI
 	output.Header = httpResponse.Header()
 	json.Unmarshal(httpResponse.Body(), output)
 	return output, nil
+}
+
+// DoHttpRequest returns function http invocation response
+func (c *Client) DoHttpRequest(req *http.Request) (*http.Response, error) {
+	headerParams := make(map[string]string)
+	if req.Header != nil {
+		for k, _ := range req.Header {
+			headerParams[k] = req.Header.Get(k)
+		}
+	}
+	// CONTENT-MD5
+	if req.Body != nil {
+		buf, _ := ioutil.ReadAll(req.Body)
+		req.Body = ioutil.NopCloser(bytes.NewReader(buf))
+		b, err := json.Marshal(buf)
+		if err != nil {
+			return nil, err
+		}
+		headerParams[HTTPHeaderContentMD5] = MD5(b)
+	}
+	// CONTENT-TYPE
+	headerParams[HTTPHeaderContentType] = req.Header.Get(HTTPHeaderContentType)
+	// DATE
+	headerParams[HTTPHeaderDate] = time.Now().UTC().Format(http.TimeFormat)
+	// Canonicalized
+	canonicalizedResource := req.URL.Path
+	params := req.URL.Query()
+	canonicalizedResource = GetSignResourceWithQueries(req.URL.Path, params)
+	// Build Authorization header
+	headerParams["Authorization"] = GetAuthStr(c.Config.AccessKeyID, c.Config.AccessKeySecret, req.Method, headerParams, canonicalizedResource)
+	// Prepare and send request.
+	preparedRequest := c.Connect.PrepareRequest(req.Body, headerParams, params).SetDoNotParseResponse(true)
+	resp, err := preparedRequest.Execute(req.Method, c.Config.Endpoint+req.URL.Path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, err
 }

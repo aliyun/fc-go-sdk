@@ -56,7 +56,6 @@ func GetSignature(key string, method string, req map[string]string, fcResource s
 	}
 
 	signStr := method + "\n" + req[HTTPHeaderContentMD5] + "\n" + req[HTTPHeaderContentType] + "\n" + req[HTTPHeaderDate] + "\n" + fcHeaders + fcResource
-
 	h := hmac.New(func() hash.Hash { return sha256.New() }, []byte(key))
 	io.WriteString(h, signStr)
 	signedStr := base64.StdEncoding.EncodeToString(h.Sum(nil))
