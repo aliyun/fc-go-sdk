@@ -2,7 +2,9 @@ package fc
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"reflect"
 	"testing"
@@ -307,6 +309,38 @@ func (s *FcClientTestSuite) TestFunction() {
 	assert.Nil(err)
 	assert.NotNil(invokeOutput.GetRequestID())
 	assert.Equal(string(invokeOutput.Payload), "hello world")
+
+	// InvokeFunction through HTTP trigger
+	functionName = fmt.Sprintf("go-function-%s", RandStringBytes(8))
+	createFunctionInput = NewCreateFunctionInput(serviceName).WithFunctionName(functionName).
+		WithDescription("go sdk test function").
+		WithHandler("main.handler").WithRuntime("python3").
+		WithCode(NewCode().WithFiles("./testCode/main.py")).
+		WithTimeout(5)
+	_, errCreateLocalFile = client.CreateFunction(createFunctionInput)
+	assert.Nil(errCreateLocalFile)
+
+	sourceArn := "dummy_arn"
+	invocationRole := ""
+	triggerName := fmt.Sprintf("go-function-trigger-%s", RandStringBytes(8))
+	description := "create http trigger"
+	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(triggerName).
+		WithDescription(description).WithInvocationRole(invocationRole).WithTriggerType("http").
+		WithSourceARN(sourceArn).WithTriggerConfig(
+		NewHTTPTriggerConfig().WithAuthType("function").WithMethods("GET", "POST"))
+
+	_, err = client.CreateTrigger(createTriggerInput)
+	assert.Nil(err)
+	httpReq, err := http.NewRequest("GET", fmt.Sprintf("/2016-08-15/proxy/%s/%s/", serviceName, functionName), nil)
+	httpReq.Header.Set("Content-Type", "application/json")
+	assert.Nil(err)
+	invokeResp, err := client.DoHttpRequest(httpReq)
+	assert.Nil(err)
+	assert.NotNil(invokeResp)
+	assert.NotNil(invokeResp.Header.Get("X-Fc-Request-Id"))
+	bodyBytes, err := ioutil.ReadAll(invokeResp.Body)
+	assert.Nil(err)
+	assert.Equal(string(bodyBytes), "Hello world!\n")
 }
 
 func (s *FcClientTestSuite) TestTrigger() {
