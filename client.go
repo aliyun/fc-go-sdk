@@ -980,3 +980,82 @@ func (c *Client) DoHttpRequest(req *http.Request) (*http.Response, error) {
 	}
 	return resp.RawResponse, err
 }
+
+// SignURL : sign an URL with signature in queries for HTTP function
+func (c *Client) SignURL(signURLInput *SignURLInput) (string, error) {
+	conf := c.Config
+	return signURLInput.signURL(conf.APIVersion, conf.Endpoint, conf.AccessKeyID, conf.AccessKeySecret, conf.SecurityToken)
+}
+
+// ListOnDemandConfigs return list of provision configs from fc
+func (c *Client) ListOnDemandConfigs(input *ListOnDemandConfigsInput) (*ListOnDemandConfigsOutput, error) {
+	if input == nil {
+		input = NewListOnDemandConfigsInput()
+	}
+
+	var output = new(ListOnDemandConfigsOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	if err := json.Unmarshal(httpResponse.Body(), output); err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+// PutOnDemandConfig put on-demand config
+func (c *Client) PutOnDemandConfig(input *PutOnDemandConfigInput) (*PutOnDemandConfigOutput, error) {
+	if input == nil {
+		input = new(PutOnDemandConfigInput)
+	}
+
+	var output = new(PutOnDemandConfigOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodPut)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	if err := json.Unmarshal(httpResponse.Body(), output); err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+// GetOnDemandConfig return on-demand config from fc
+func (c *Client) GetOnDemandConfig(input *GetOnDemandConfigInput) (*GetOnDemandConfigOutput, error) {
+	if input == nil {
+		input = new(GetOnDemandConfigInput)
+	}
+
+	var output = new(GetOnDemandConfigOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	if err := json.Unmarshal(httpResponse.Body(), output); err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+// DeleteOnDemandConfig delete on-demand config
+func (c *Client) DeleteOnDemandConfig(input *DeleteOnDemandConfigInput) (*DeleteOnDemandConfigOutput, error) {
+	if input == nil {
+		input = new(DeleteOnDemandConfigInput)
+	}
+
+	var output = new(DeleteOnDemandConfigOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodDelete)
+	if err != nil {
+		return nil, err
+	}
+
+	output.Header = httpResponse.Header()
+	return output, nil
+}
