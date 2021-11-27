@@ -1,6 +1,8 @@
 hash: fdd43ad59a285ff07439be4314c17f424b5487b74d6449feb873aba25132dab2
-updated: 2021-11-23T14:40:28.95717+08:00
+updated: 2021-11-23T14:44:33.641688+08:00
 imports:
+- name: github.com/aliyun/fc-go-sdk
+  version: 4855d486e2f8785539fb2ef5e617a0f7d68b7bfe
 - name: github.com/gorilla/websocket
   version: c3dd95aea9779669bb3daafbd84ee0530c8ce1c1
 - name: github.com/stretchr/testify
@@ -16,12 +18,4 @@ imports:
   - publicsuffix
 - name: gopkg.in/resty.v1
   version: 03c09fa32a21b7b27b8dbb3877826c1ab3d2daa2
-testImports:
-- name: github.com/davecgh/go-spew
-  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
-  subpackages:
-  - spew
-- name: github.com/pmezard/go-difflib
-  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
-  subpackages:
-  - difflib
+testImports: []

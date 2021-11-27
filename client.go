@@ -3,11 +3,16 @@ package fc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"gopkg.in/resty.v1"
+	"github.com/gorilla/websocket"
 )
 
 // Client defines fc client
@@ -1059,3 +1064,108 @@ func (c *Client) DeleteOnDemandConfig(input *DeleteOnDemandConfigInput) (*Delete
 	output.Header = httpResponse.Header()
 	return output, nil
 }
+
+// ListInstances ...
+func (c *Client) ListInstances(input *ListInstancesInput) (*ListInstancesOutput, error) {
+	if input == nil {
+		input = new(ListInstancesInput)
+	}
+
+	var output = new(ListInstancesOutput)
+	httpResponse, err := c.sendRequest(input, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+	data := httpResponse.Body()
+	fmt.Printf("%s\n", data)
+	json.Unmarshal(data, output)
+	output.Header = httpResponse.Header()
+	return output, nil
+}
+
+// InstanceExec ...
+func (c *Client) InstanceExec(input *InstanceExecInput) (*InstanceExecOutput, error) {
+	if input == nil {
+		input = new(InstanceExecInput)
+	}
+
+	var output = new(InstanceExecOutput)
+	ws, err := c.openWebSocketConn(input)
+	if err != nil {
+		return nil, err
+	}
+	output.WebsocketConnection = ws
+	output.start(input)
+	return output, nil
+}
+
+// buildWebSocket ...
+func (c *Client) openWebSocketConn(input ServiceInput) (*websocket.Conn, error) {
+	if err := input.Validate(); err != nil {
+		return nil, err
+	}
+	path := "/" + c.Config.APIVersion + input.GetPath()
+
+	headerParams := make(map[string]string)
+	for k, v := range input.GetHeaders() {
+		headerParams[k] = v
+	}
+
+	headerParams["Host"] = c.Config.host
+	headerParams[HTTPHeaderAccountID] = c.Config.AccountID
+	headerParams[HTTPHeaderUserAgent] = c.Config.UserAgent
+	headerParams["Accept"] = "application/json"
+	// Caution: should not declare this as byte[] whose zero value is an empty byte array
+	// if input has no payload, the http body should not be populated at all.
+	if input.GetPayload() != nil {
+		switch input.GetPayload().(type) {
+		case *[]byte:
+			headerParams["Content-Type"] = "application/octet-stream"
+			b := input.GetPayload().(*[]byte)
+			headerParams["Content-MD5"] = MD5(*b)
+		default:
+			headerParams["Content-Type"] = "application/json"
+			b, err := json.Marshal(input.GetPayload())
+			if err != nil {
+				// TODO: return client side error
+				return nil, nil
+			}
+			headerParams["Content-MD5"] = MD5(b)
+		}
+	}
+	headerParams["Date"] = time.Now().UTC().Format(http.TimeFormat)
+	if c.Config.SecurityToken != "" {
+		headerParams[HTTPHeaderSecurityToken] = c.Config.SecurityToken
+	}
+	switch c.Config.APIVersion {
+	case APIVersionV1:
+		headerParams["Authorization"] = GetAuthStr(
+			c.Config.AccessKeyID, c.Config.AccessKeySecret, http.MethodGet, headerParams, path)
+	default:
+		return nil, fmt.Errorf("unsupported api version: '%s'", c.Config.APIVersion)
+	}
+
+	u := &url.URL{Scheme: "ws", Host: c.Config.host, Path: path, RawQuery: input.GetQueryParams().Encode()}
+	if strings.HasPrefix(c.Config.host, "https://") {
+		u.Scheme = "wss"
+	}
+	header := make(http.Header)
+	for headerKey, headerValue := range headerParams {
+		if headerKey == "Connection" || headerKey == "Upgrade" || headerKey == "Sec-Websocket-Version" {
+			continue
+		}
+		header.Set(headerKey, headerValue)
+	}
+
+	ws, resp, err := websocket.DefaultDialer.Dial(u.String(), header)
+	if err != nil {
+		if resp != nil {
+			content, _ := io.ReadAll(resp.Body)
+			return nil, fmt.Errorf("%v: %s", err, content)
+		}
+		return nil, err
+	}
+
+	return ws, nil
+}
+
