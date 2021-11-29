@@ -155,6 +155,8 @@ type triggerMetadata struct {
 	InvocationRole   *string         `json:"invocationRole"`
 	Qualifier        *string         `json:"qualifier"`
 	RawTriggerConfig json.RawMessage `json:"triggerConfig"`
+	URLInternet      *string         `json:"urlInternet"`
+	URLIntranet      *string         `json:"urlIntranet"`
 	CreatedTime      *string         `json:"createdTime"`
 	LastModifiedTime *string         `json:"lastModifiedTime"`
 
