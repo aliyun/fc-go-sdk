@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -1160,7 +1159,7 @@ func (c *Client) openWebSocketConn(input ServiceInput) (*websocket.Conn, error) 
 	ws, resp, err := websocket.DefaultDialer.Dial(u.String(), header)
 	if err != nil {
 		if resp != nil {
-			content, _ := io.ReadAll(resp.Body)
+			content, _ := ioutil.ReadAll(resp.Body)
 			return nil, fmt.Errorf("%v: %s", err, content)
 		}
 		return nil, err
