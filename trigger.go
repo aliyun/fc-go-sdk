@@ -23,6 +23,7 @@ type CreateTriggerInput struct {
 	ServiceName  *string
 	FunctionName *string
 	TriggerCreateObject
+	headers      Header
 }
 
 type TriggerCreateObject struct {
@@ -41,6 +42,7 @@ func NewCreateTriggerInput(serviceName string, functionName string) *CreateTrigg
 	return &CreateTriggerInput{
 		ServiceName:  &serviceName,
 		FunctionName: &functionName,
+		headers:      make(Header),
 	}
 }
 
@@ -79,6 +81,11 @@ func (i *CreateTriggerInput) WithTriggerConfig(config interface{}) *CreateTrigge
 	return i
 }
 
+func (i *CreateTriggerInput) WithHeader(key, value string) *CreateTriggerInput {
+	i.headers[key] = value
+	return i
+}
+
 func (i *CreateTriggerInput) GetQueryParams() url.Values {
 	out := url.Values{}
 	return out
@@ -89,7 +96,7 @@ func (i *CreateTriggerInput) GetPath() string {
 }
 
 func (i *CreateTriggerInput) GetHeaders() Header {
-	return make(Header, 0)
+	return i.headers
 }
 
 func (i *CreateTriggerInput) GetPayload() interface{} {
@@ -312,6 +319,7 @@ type GetTriggerInput struct {
 	ServiceName  *string
 	FunctionName *string
 	TriggerName  *string
+	headers      Header
 }
 
 func NewGetTriggerInput(serviceName string, functionName string, triggerName string) *GetTriggerInput {
@@ -319,7 +327,13 @@ func NewGetTriggerInput(serviceName string, functionName string, triggerName str
 		ServiceName:  &serviceName,
 		FunctionName: &functionName,
 		TriggerName:  &triggerName,
+		headers:      make(Header),
 	}
+}
+
+func (i *GetTriggerInput) WithHeader(key, value string) *GetTriggerInput {
+	i.headers[key] = value
+	return i
 }
 
 func (i *GetTriggerInput) GetQueryParams() url.Values {
@@ -332,7 +346,7 @@ func (i *GetTriggerInput) GetPath() string {
 }
 
 func (i *GetTriggerInput) GetHeaders() Header {
-	return make(Header, 0)
+	return i.headers
 }
 
 func (i *GetTriggerInput) GetPayload() interface{} {
@@ -406,6 +420,7 @@ type UpdateTriggerInput struct {
 	TriggerName  *string
 	TriggerUpdateObject
 	IfMatch *string
+	headers      Header
 }
 
 func NewUpdateTriggerInput(serviceName string, functionName string, triggerName string) *UpdateTriggerInput {
@@ -413,6 +428,7 @@ func NewUpdateTriggerInput(serviceName string, functionName string, triggerName 
 		ServiceName:  &serviceName,
 		FunctionName: &functionName,
 		TriggerName:  &triggerName,
+		headers:      make(Header),
 	}
 }
 
@@ -441,6 +457,11 @@ func (i *UpdateTriggerInput) WithQualifier(qualifier string) *UpdateTriggerInput
 	return i
 }
 
+func (i *UpdateTriggerInput) WithHeader(key, value string) *UpdateTriggerInput {
+	i.headers[key] = value
+	return i
+}
+
 func (i *UpdateTriggerInput) GetQueryParams() url.Values {
 	out := url.Values{}
 	return out
@@ -451,7 +472,7 @@ func (i *UpdateTriggerInput) GetPath() string {
 }
 
 func (i *UpdateTriggerInput) GetHeaders() Header {
-	header := make(Header)
+	header := i.headers
 	if i.IfMatch != nil {
 		header[ifMatch] = *i.IfMatch
 	}
@@ -519,12 +540,14 @@ type ListTriggersInput struct {
 	ServiceName  *string
 	FunctionName *string
 	Query
+	headers      Header
 }
 
 func NewListTriggersInput(serviceName string, functionName string) *ListTriggersInput {
 	return &ListTriggersInput{
 		ServiceName:  &serviceName,
 		FunctionName: &functionName,
+		headers:      make(Header),
 	}
 }
 
@@ -545,6 +568,11 @@ func (i *ListTriggersInput) WithNextToken(nextToken string) *ListTriggersInput {
 
 func (i *ListTriggersInput) WithLimit(limit int32) *ListTriggersInput {
 	i.Limit = &limit
+	return i
+}
+
+func (i *ListTriggersInput) WithHeader(key, value string) *ListTriggersInput {
+	i.headers[key] = value
 	return i
 }
 
@@ -574,7 +602,7 @@ func (i *ListTriggersInput) GetPath() string {
 }
 
 func (i *ListTriggersInput) GetHeaders() Header {
-	return make(Header, 0)
+	return i.headers
 }
 
 func (i *ListTriggersInput) GetPayload() interface{} {
@@ -615,6 +643,7 @@ type DeleteTriggerInput struct {
 	FunctionName *string
 	TriggerName  *string
 	IfMatch      *string
+	headers      Header
 }
 
 func NewDeleteTriggerInput(serviceName string, functionName string, triggerName string) *DeleteTriggerInput {
@@ -622,12 +651,18 @@ func NewDeleteTriggerInput(serviceName string, functionName string, triggerName 
 		ServiceName:  &serviceName,
 		FunctionName: &functionName,
 		TriggerName:  &triggerName,
+		headers:      make(Header),
 	}
 }
 
 func (s *DeleteTriggerInput) WithIfMatch(ifMatch string) *DeleteTriggerInput {
 	s.IfMatch = &ifMatch
 	return s
+}
+
+func (i *DeleteTriggerInput) WithHeader(key, value string) *DeleteTriggerInput {
+	i.headers[key] = value
+	return i
 }
 
 func (i *DeleteTriggerInput) GetQueryParams() url.Values {
@@ -640,7 +675,7 @@ func (i *DeleteTriggerInput) GetPath() string {
 }
 
 func (i *DeleteTriggerInput) GetHeaders() Header {
-	header := make(Header)
+	header := i.headers
 	if i.IfMatch != nil {
 		header[ifMatch] = *i.IfMatch
 	}
