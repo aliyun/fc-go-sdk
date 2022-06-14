@@ -16,6 +16,7 @@ const (
 	TRIGGER_TYPE_TABLESTORE = "tablestore"
 	TRIGGER_TYPE_CDN_EVENTS = "cdn_events"
 	TRIGGER_TYPE_MNS_TOPIC  = "mns_topic"
+	TRIGGER_TYPE_EVENTBRIDGE = "eventbridge"
 )
 
 // CreateTriggerInput defines trigger creation input
@@ -222,6 +223,12 @@ func (m *triggerMetadata) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		tmp.TriggerConfig = mnsTriggerConfig
+	case TRIGGER_TYPE_EVENTBRIDGE:
+		ebTriggerConfig := &EventBridgeTriggerConfig{}
+		if err := json.Unmarshal(tmp.RawTriggerConfig, ebTriggerConfig); err != nil {
+			return err
+		}
+		tmp.TriggerConfig = ebTriggerConfig
 	default:
 		return ErrUnknownTriggerType
 	}
