@@ -365,7 +365,7 @@ func (s *FcClientTestSuite) TestTrigger() {
 		WithHandler("main.my_handler").WithRuntime("python2.7").
 		WithCode(NewCode().
 			WithOSSBucketName(codeBucketName).
-			WithOSSObjectName("hello_world_nodejs.zip")).
+			WithOSSObjectName("hello_world.zip")).
 		WithTimeout(5)
 	_, errCreate := client.CreateFunction(createFunctionInput1)
 	assert.Nil(errCreate)
@@ -376,6 +376,7 @@ func (s *FcClientTestSuite) TestTrigger() {
 	s.testOssTrigger(client, serviceName, functionName)
 	s.testLogTrigger(client, serviceName, functionName)
 	s.testHttpTrigger(client, serviceName, functionName2)
+	s.testEventBridgeTrigger(client, serviceName, functionName)
 }
 
 func (s *FcClientTestSuite) testOssTrigger(client *Client, serviceName, functionName string) {
@@ -498,6 +499,156 @@ func (s *FcClientTestSuite) testHttpTrigger(client *Client, serviceName, functio
 	assert.Nil(errDelTrigger)
 }
 
+func (s *FcClientTestSuite) testEventBridgeTrigger(client *Client, serviceName, functionName string) {
+	generateEventBusName := func(eventSourceType, triggerName string) string {
+		if eventSourceType == "Default" {
+			return "default"
+		}
+		return fmt.Sprintf("%s-%s-%s", eventSourceType, functionName, triggerName)
+	}
+	generateEventRuleName := func(triggerName string) string {
+		return fmt.Sprintf("%s-%s-%s", serviceName, functionName, triggerName)
+	}
+	generateEventRuleArn := func(eventSourceType, triggerName string) string {
+		eventBusName := generateEventBusName(eventSourceType, triggerName)
+		eventRuleName := generateEventRuleName(triggerName)
+		return fmt.Sprintf("acs:eventbridge:%s:%s:eventbus/%s/rule/%s", region, accountID, eventBusName, eventRuleName)
+	}
+	assert := s.Require()
+	description := "create eventbridge trigger"
+	updateTriggerDesc := "update eventbridge trigger"
+	// Create eventbridge trigger with Default event source type
+	defaultTriggerName := "test-eb-trigger-with-default-source"
+	defaultEventSourceType := "Default"
+
+	defaultEventSourceConfig := NewEventSourceConfig().WithEventSourceType(defaultEventSourceType)
+	createTriggerInput := NewCreateTriggerInput(serviceName, functionName).WithTriggerName(defaultTriggerName).
+		WithDescription(description).WithTriggerType(TRIGGER_TYPE_EVENTBRIDGE).
+		WithHeader("x-fc-enable-eventbridge-trigger", "enable").WithTriggerConfig(
+		NewEventBridgeTriggerConfig().WithTriggerEnable(true).WithAsyncInvocationType(false).
+		WithEventRuleFilterPattern("{\"source\": [\"acs.oss\"],\"type\":[\"oss:BucketCreated:PutBucket\"]}").WithEventSourceConfig(defaultEventSourceConfig))
+	expectedDefaultSourceArn := generateEventRuleArn(defaultEventSourceType, defaultTriggerName)
+	createTriggerOutput, err := client.CreateTrigger(createTriggerInput)
+	assert.Nil(err)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, defaultTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedDefaultSourceArn, "")
+
+	getTriggerOutput, err := client.GetTrigger(NewGetTriggerInput(serviceName, functionName, defaultTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, defaultTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedDefaultSourceArn, "")
+
+	updateTriggerOutput, err := client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, defaultTriggerName).WithDescription(updateTriggerDesc).
+		WithTriggerConfig(NewEventBridgeTriggerConfig().WithAsyncInvocationType(true)).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, defaultTriggerName, updateTriggerDesc, TRIGGER_TYPE_EVENTBRIDGE, expectedDefaultSourceArn, "")
+	assert.True(*updateTriggerOutput.TriggerConfig.(*EventBridgeTriggerConfig).AsyncInvocationType)
+
+	// Create eventbridge trigger with MNS event source type
+	// Creating trigger doesn't rely on the existed resource now, may rely on the existed resource in the future
+	mnsTriggerName := "test-eb-trigger-with-mns-source"
+	mnsEventSourceType := "MNS"
+	sourceMNSParameters := NewSourceMNSParameters().WithRegionId(region).WithQueueName("test-queue").WithIsBase64Decode(true)
+	mnsEventSourceParams := NewEventSourceParameters().WithSourceMNSParameters(sourceMNSParameters)
+
+	mnsEventSourceConfig := NewEventSourceConfig().WithEventSourceType(mnsEventSourceType).WithEventSourceParameters(mnsEventSourceParams)
+	createTriggerInput = NewCreateTriggerInput(serviceName, functionName).WithTriggerName(mnsTriggerName).
+		WithDescription(description).WithTriggerType(TRIGGER_TYPE_EVENTBRIDGE).
+		WithHeader("x-fc-enable-eventbridge-trigger", "enable").WithTriggerConfig(
+		NewEventBridgeTriggerConfig().WithTriggerEnable(true).WithAsyncInvocationType(false).
+			WithEventRuleFilterPattern("{}").WithEventSourceConfig(mnsEventSourceConfig))
+	expectedMNSSourceArn := generateEventRuleArn(mnsEventSourceType, mnsTriggerName)
+
+	createTriggerOutput, err = client.CreateTrigger(createTriggerInput)
+	assert.Nil(err)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, mnsTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedMNSSourceArn, "")
+
+	getTriggerOutput, err = client.GetTrigger(NewGetTriggerInput(serviceName, functionName, mnsTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, mnsTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedMNSSourceArn, "")
+
+	updateTriggerOutput, err = client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, mnsTriggerName).WithDescription(updateTriggerDesc).
+		WithTriggerConfig(NewEventBridgeTriggerConfig().WithAsyncInvocationType(true)).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, mnsTriggerName, updateTriggerDesc, TRIGGER_TYPE_EVENTBRIDGE, expectedMNSSourceArn, "")
+	assert.True(*updateTriggerOutput.TriggerConfig.(*EventBridgeTriggerConfig).AsyncInvocationType)
+
+	// Create eventbridge trigger with RocketMQ event source type
+	// Creating trigger doesn't rely on the existed resource now, may rely on the existed resource in the future
+	rocketMQTriggerName := "test-eb-trigger-with-rocketmq-source"
+	rocketMQEventSourceType := "RocketMQ"
+	sourceRocketMQParameters := NewSourceRocketMQParameters().WithRegionId(region).WithGroupID("test-group").
+			WithInstanceId("test-instance").WithTopic("test-topic").WithTimestamp(1636597951984)
+	rocketMQEventSourceParams := NewEventSourceParameters().WithSourceRocketMQParameters(sourceRocketMQParameters)
+
+	rocketMQEventSourceConfig := NewEventSourceConfig().WithEventSourceType(rocketMQEventSourceType).WithEventSourceParameters(rocketMQEventSourceParams)
+	createTriggerInput = NewCreateTriggerInput(serviceName, functionName).WithTriggerName(rocketMQTriggerName).
+		WithDescription(description).WithTriggerType(TRIGGER_TYPE_EVENTBRIDGE).
+		WithHeader("x-fc-enable-eventbridge-trigger", "enable").WithTriggerConfig(
+		NewEventBridgeTriggerConfig().WithTriggerEnable(true).WithAsyncInvocationType(false).
+			WithEventRuleFilterPattern("{}").WithEventSourceConfig(rocketMQEventSourceConfig))
+	expectedRocketMQSourceArn := generateEventRuleArn(rocketMQEventSourceType, rocketMQTriggerName)
+
+	createTriggerOutput, err = client.CreateTrigger(createTriggerInput)
+	assert.Nil(err)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, rocketMQTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedRocketMQSourceArn, "")
+
+	getTriggerOutput, err = client.GetTrigger(NewGetTriggerInput(serviceName, functionName, rocketMQTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, rocketMQTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedRocketMQSourceArn, "")
+
+	updateTriggerOutput, err = client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, rocketMQTriggerName).WithDescription(updateTriggerDesc).
+		WithTriggerConfig(NewEventBridgeTriggerConfig().WithAsyncInvocationType(true)).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, rocketMQTriggerName, updateTriggerDesc, TRIGGER_TYPE_EVENTBRIDGE, expectedRocketMQSourceArn, "")
+	assert.True(*updateTriggerOutput.TriggerConfig.(*EventBridgeTriggerConfig).AsyncInvocationType)
+
+	// Create eventbridge trigger with RabbitMQ event source type
+	// Creating trigger doesn't rely on the existed resource now, may rely on the existed resource in the future
+	rabbitMQTriggerName := "test-eb-trigger-with-rabbitmq-source"
+	rabbitMQEventSourceType := "RabbitMQ"
+	sourceRabbitMQParameters := NewSourceRabbitMQParameters().WithRegionId(region).WithInstanceId("test-instance").
+		WithQueueName("test-queue").WithVirtualHostName("test-virtual")
+	rabbitMQEventSourceParams := NewEventSourceParameters().WithSourceRabbitMQParameters(sourceRabbitMQParameters)
+
+	rabbitMQEventSourceConfig := NewEventSourceConfig().WithEventSourceType(rabbitMQEventSourceType).WithEventSourceParameters(rabbitMQEventSourceParams)
+	createTriggerInput = NewCreateTriggerInput(serviceName, functionName).WithTriggerName(rabbitMQTriggerName).
+		WithDescription(description).WithTriggerType(TRIGGER_TYPE_EVENTBRIDGE).
+		WithHeader("x-fc-enable-eventbridge-trigger", "enable").WithTriggerConfig(
+		NewEventBridgeTriggerConfig().WithTriggerEnable(true).WithAsyncInvocationType(false).
+			WithEventRuleFilterPattern("{}").WithEventSourceConfig(rabbitMQEventSourceConfig))
+	expectedRabbitMQSourceArn := generateEventRuleArn(rabbitMQEventSourceType, rabbitMQTriggerName)
+
+	createTriggerOutput, err = client.CreateTrigger(createTriggerInput)
+	assert.Nil(err)
+	s.checkTriggerResponse(&createTriggerOutput.triggerMetadata, rabbitMQTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedRabbitMQSourceArn, "")
+
+	getTriggerOutput, err = client.GetTrigger(NewGetTriggerInput(serviceName, functionName, rabbitMQTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&getTriggerOutput.triggerMetadata, rabbitMQTriggerName, description, TRIGGER_TYPE_EVENTBRIDGE, expectedRabbitMQSourceArn, "")
+
+	updateTriggerOutput, err = client.UpdateTrigger(NewUpdateTriggerInput(serviceName, functionName, rabbitMQTriggerName).WithDescription(updateTriggerDesc).
+		WithTriggerConfig(NewEventBridgeTriggerConfig().WithAsyncInvocationType(true)).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	s.checkTriggerResponse(&updateTriggerOutput.triggerMetadata, rabbitMQTriggerName, updateTriggerDesc, TRIGGER_TYPE_EVENTBRIDGE, expectedRabbitMQSourceArn, "")
+	assert.True(*updateTriggerOutput.TriggerConfig.(*EventBridgeTriggerConfig).AsyncInvocationType)
+
+
+	listTriggersOutput, err := client.ListTriggers(NewListTriggersInput(serviceName, functionName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(err)
+	assert.Equal(len(listTriggersOutput.Triggers), 4)
+
+	_, errDelDefaultTrigger := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, defaultTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(errDelDefaultTrigger)
+
+	_, errDelMNSTrigger := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, mnsTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(errDelMNSTrigger)
+
+	_, errDelRocketMQTrigger := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, rocketMQTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(errDelRocketMQTrigger)
+
+	_, errDelRabbitMQTrigger := client.DeleteTrigger(NewDeleteTriggerInput(serviceName, functionName, rabbitMQTriggerName).WithHeader("x-fc-enable-eventbridge-trigger", "enable"))
+	assert.Nil(errDelRabbitMQTrigger)
+}
+
 func (s *FcClientTestSuite) checkTriggerResponse(triggerResp *triggerMetadata, triggerName, description, triggerType, sourceArn, invocationRole string) {
 	assert := s.Require()
 	assert.Equal(*triggerResp.TriggerName, triggerName)
@@ -508,7 +659,9 @@ func (s *FcClientTestSuite) checkTriggerResponse(triggerResp *triggerMetadata, t
 	} else {
 		assert.Nil(triggerResp.SourceARN)
 	}
-	assert.Equal(*triggerResp.InvocationRole, invocationRole)
+	if triggerType != TRIGGER_TYPE_EVENTBRIDGE {
+		assert.Equal(*triggerResp.InvocationRole, invocationRole)
+	}
 	assert.NotNil(*triggerResp.CreatedTime)
 	assert.NotNil(*triggerResp.LastModifiedTime)
 }
