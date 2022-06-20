@@ -696,18 +696,25 @@ type DeleteFunctionInput struct {
 	ServiceName  *string
 	FunctionName *string
 	IfMatch      *string
+	headers      Header
 }
 
 func NewDeleteFunctionInput(serviceName string, functionName string) *DeleteFunctionInput {
 	return &DeleteFunctionInput{
 		ServiceName:  &serviceName,
 		FunctionName: &functionName,
+		headers:      make(Header),
 	}
 }
 
 func (s *DeleteFunctionInput) WithIfMatch(ifMatch string) *DeleteFunctionInput {
 	s.IfMatch = &ifMatch
 	return s
+}
+
+func (i *DeleteFunctionInput) WithHeader(key, value string) *DeleteFunctionInput {
+	i.headers[key] = value
+	return i
 }
 
 func (i *DeleteFunctionInput) GetQueryParams() url.Values {
@@ -720,7 +727,7 @@ func (i *DeleteFunctionInput) GetPath() string {
 }
 
 func (i *DeleteFunctionInput) GetHeaders() Header {
-	header := make(Header)
+	header := i.headers
 	if i.IfMatch != nil {
 		header[ifMatch] = *i.IfMatch
 	}
