@@ -713,6 +713,9 @@ func (s *DeleteFunctionInput) WithIfMatch(ifMatch string) *DeleteFunctionInput {
 }
 
 func (i *DeleteFunctionInput) WithHeader(key, value string) *DeleteFunctionInput {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	i.headers[key] = value
 	return i
 }
