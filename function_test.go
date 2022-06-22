@@ -28,6 +28,11 @@ func (s *FunctionStructsTestSuite) TestHeaders() {
 	input.WithHeader("X-Fc-Invocation-Code-Version", "Latest")
 	headers = input.GetHeaders()
 	assert.Equal("Latest", headers["X-Fc-Invocation-Code-Version"])
+
+	deleteFunctionInput := NewDeleteFunctionInput("sn", "fn")
+	deleteFunctionInput.WithHeader("header", "value")
+	headers = deleteFunctionInput.GetHeaders()
+	assert.Equal("value", headers["header"])
 }
 
 func (s *FunctionStructsTestSuite) TestEnvironmentVariables() {

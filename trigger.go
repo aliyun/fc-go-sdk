@@ -83,6 +83,9 @@ func (i *CreateTriggerInput) WithTriggerConfig(config interface{}) *CreateTrigge
 }
 
 func (i *CreateTriggerInput) WithHeader(key, value string) *CreateTriggerInput {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	i.headers[key] = value
 	return i
 }
@@ -97,6 +100,9 @@ func (i *CreateTriggerInput) GetPath() string {
 }
 
 func (i *CreateTriggerInput) GetHeaders() Header {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	return i.headers
 }
 
@@ -339,6 +345,9 @@ func NewGetTriggerInput(serviceName string, functionName string, triggerName str
 }
 
 func (i *GetTriggerInput) WithHeader(key, value string) *GetTriggerInput {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	i.headers[key] = value
 	return i
 }
@@ -353,6 +362,9 @@ func (i *GetTriggerInput) GetPath() string {
 }
 
 func (i *GetTriggerInput) GetHeaders() Header {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	return i.headers
 }
 
@@ -465,6 +477,9 @@ func (i *UpdateTriggerInput) WithQualifier(qualifier string) *UpdateTriggerInput
 }
 
 func (i *UpdateTriggerInput) WithHeader(key, value string) *UpdateTriggerInput {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	i.headers[key] = value
 	return i
 }
@@ -479,6 +494,9 @@ func (i *UpdateTriggerInput) GetPath() string {
 }
 
 func (i *UpdateTriggerInput) GetHeaders() Header {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	header := i.headers
 	if i.IfMatch != nil {
 		header[ifMatch] = *i.IfMatch
@@ -579,6 +597,9 @@ func (i *ListTriggersInput) WithLimit(limit int32) *ListTriggersInput {
 }
 
 func (i *ListTriggersInput) WithHeader(key, value string) *ListTriggersInput {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	i.headers[key] = value
 	return i
 }
@@ -609,6 +630,9 @@ func (i *ListTriggersInput) GetPath() string {
 }
 
 func (i *ListTriggersInput) GetHeaders() Header {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	return i.headers
 }
 
@@ -668,6 +692,9 @@ func (s *DeleteTriggerInput) WithIfMatch(ifMatch string) *DeleteTriggerInput {
 }
 
 func (i *DeleteTriggerInput) WithHeader(key, value string) *DeleteTriggerInput {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	i.headers[key] = value
 	return i
 }
@@ -682,6 +709,9 @@ func (i *DeleteTriggerInput) GetPath() string {
 }
 
 func (i *DeleteTriggerInput) GetHeaders() Header {
+	if i.headers == nil {
+		i.headers = make(Header)
+	}
 	header := i.headers
 	if i.IfMatch != nil {
 		header[ifMatch] = *i.IfMatch
