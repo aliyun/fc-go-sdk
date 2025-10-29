@@ -24,7 +24,7 @@ func NewConfig() *Config {
 	config.IsDebug = false
 	config.UserAgent = "go-sdk-0.1"
 	config.Timeout = 60
-	config.APIVersion = "2016-08-15"
+	config.APIVersion = APIVersionV1
 	config.host = ""
 	return &config
 }

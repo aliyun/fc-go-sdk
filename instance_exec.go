@@ -1,11 +1,11 @@
 package fc
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"sync"
-	"context"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -36,7 +36,6 @@ func boolToString(b bool) string {
 	}
 	return "false"
 }
-
 
 type InstanceExecOutput struct {
 	Header              http.Header
@@ -236,6 +235,13 @@ func (i *InstanceExecInput) GetQueryParams() url.Values {
 }
 
 func (i *InstanceExecInput) GetPath() string {
+	if i.ServiceName == nil || *i.ServiceName == "" {
+		if i.Qualifier != nil {
+			panic("qualifier is not supported for fc3 instance exec")
+		}
+		return fmt.Sprintf("/functions/%s/instances/%s/exec", pathEscape(*i.FunctionName), pathEscape(*i.InstanceID))
+	}
+
 	if i.Qualifier != nil {
 		return fmt.Sprintf(instanceExecWithQualifierPath, pathEscape(*i.ServiceName), pathEscape(*i.Qualifier), pathEscape(*i.FunctionName), pathEscape(*i.InstanceID))
 	} else {
@@ -252,9 +258,6 @@ func (i *InstanceExecInput) GetPayload() interface{} {
 }
 
 func (i *InstanceExecInput) Validate() error {
-	if IsBlank(i.ServiceName) {
-		return fmt.Errorf("Service name is required but not provided")
-	}
 	if IsBlank(i.FunctionName) {
 		return fmt.Errorf("Function name is required but not provided")
 	}

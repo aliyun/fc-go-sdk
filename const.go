@@ -75,6 +75,7 @@ const (
 // Supported api versions
 const (
 	APIVersionV1 = "2016-08-15"
+	APIVersionV2 = "2023-03-30"
 )
 
 // Supported tracing types

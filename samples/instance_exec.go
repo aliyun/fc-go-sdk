@@ -10,28 +10,21 @@ import (
 )
 
 const (
-	ACCOUNT_ID   = ""
-	serviceName  = ""
+	// set these variables before run
+	ACCOUNT_ID = ""
+
+	serviceName  = "" // for fc3 function, just keep empty
 	functionName = ""
+	instanceID   = ""
 )
 
 func main() {
+	// pass the endpoint, access_key_id, and access_key_secret to sdk client by environment variables
 	client, _ := fc.NewClient(
 		os.Getenv("ENDPOINT"), "2016-08-15", os.Getenv("ACCESS_KEY_ID"), os.Getenv("ACCESS_KEY_SECRET"),
 		fc.WithTransport(&http.Transport{MaxIdleConnsPerHost: 100}),
 	)
 	client.Config.AccountID = ACCOUNT_ID
-
-	instances, err := client.ListInstances(fc.NewListInstancesInput(serviceName, functionName))
-	if err != nil {
-		fmt.Printf("List instance failed: %s\n", err)
-		return
-	}
-	instanceID := ""
-	for _, ins := range instances.Instances {
-		instanceID = ins.InstanceID
-		fmt.Println(ins.InstanceID, ins.VersionID)
-	}
 
 	// Exec command without -it, stdin=false, tty=false
 	if instanceID != "" {
@@ -81,7 +74,6 @@ func main() {
 		}
 		time.Sleep(time.Second * 1)
 	}
-
 
 	// Exec command with -it : stdin=true, tty=true
 	if instanceID != "" {

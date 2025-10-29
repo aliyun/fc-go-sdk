@@ -1087,6 +1087,11 @@ func (c *Client) InstanceExec(input *InstanceExecInput) (*InstanceExecOutput, er
 	if input == nil {
 		input = new(InstanceExecInput)
 	}
+	if input.ServiceName == nil || *input.ServiceName == "" {
+		c.Config.APIVersion = APIVersionV2
+	} else {
+		c.Config.APIVersion = APIVersionV1
+	}
 
 	var output = new(InstanceExecOutput)
 	ws, err := c.openWebSocketConn(input)
@@ -1137,7 +1142,7 @@ func (c *Client) openWebSocketConn(input ServiceInput) (*websocket.Conn, error) 
 		headerParams[HTTPHeaderSecurityToken] = c.Config.SecurityToken
 	}
 	switch c.Config.APIVersion {
-	case APIVersionV1:
+	case APIVersionV1, APIVersionV2:
 		headerParams["Authorization"] = GetAuthStr(
 			c.Config.AccessKeyID, c.Config.AccessKeySecret, http.MethodGet, headerParams, path)
 	default:
